@@ -22,7 +22,8 @@ Requirements: `bash` and `python3`. Nothing else: the game itself is bundled,
 and the tutor runs fully offline by default, with no LLM.
 
 ```sh
-git clone <this-repo> && cd gameshell-tutor
+git clone https://github.com/jubnr/gameshell-tutor.git
+cd gameshell-tutor
 ./play.sh
 ```
 
@@ -45,6 +46,43 @@ The shim is **inert** unless `GSH_TUTOR=1` is exported, so launching the game
 normally (`bash gameshell.sh`) behaves exactly as before.
 
 The Game Master speaks French or English, following your `$LANG`.
+
+## Running participants
+
+`./subject.sh <id>` plays as a named subject and keeps everything they produce
+in one directory. Two subjects never share state, and progress resumes across
+sessions.
+
+```sh
+./subject.sh sub-01          # play as sub-01, created on first run
+./subject.sh sub-01 --pane   # any play.sh flag is passed through
+./subject.sh --list          # subjects, current mission, session count
+./subject.sh --where sub-01  # print that subject's data directory
+```
+
+```
+~/gameshell-subjects/sub-01/
+  game.sh              their own copy of the game
+  game-save.sh         written by the engine when they quit
+  tutor/               sessions, learner model, config
+    sessions/<stamp>/  turns.jsonl, chat.jsonl, typescript, outbox
+    learner-<uid>.json what they demonstrated, per command
+```
+
+Each subject needs a whole copy of the game, not just a separate save:
+GameShell keeps progress inside the archive, and the learner model is keyed on
+the game's own `uid`. Sharing one game would merge both participants' progress
+and their learner models.
+
+`subject.sh` resumes from the newest savefile the engine wrote, so a subject
+continues where they stopped rather than restarting at mission 1. Set
+`GSH_SUBJECTS` to move the root. Archiving or deleting a participant is one
+`cp -r` or `rm -rf` of their directory.
+
+Per subject you get a full behavioural record: every command with its exit
+code, working directory and a bounded snapshot of the world, the graded
+`hint_level` reached on each mission, the classified error types, and a
+`seen / used / mastered` status per command over time.
 
 ## Talking to the Game Master
 
@@ -182,20 +220,6 @@ runner you like.
 
 **Side panel** (the older layout): `./play.sh --pane` opens a tmux split with
 the tutor on the right, using `/hint` and `/persona`.
-
-**One participant at a time**: `./subject.sh <id>` plays as a named subject and
-keeps everything they produce under `~/gameshell-subjects/<id>/`: their own copy
-of the game, their savefile, their sessions and their learner model. Progress
-resumes across launches, and two subjects never share state.
-
-```sh
-./subject.sh sub-01          # play as sub-01, created on first run
-./subject.sh --list          # subjects, current mission, session count
-./subject.sh --where sub-01  # print that subject's data directory
-```
-
-Set `GSH_SUBJECTS` to change the root. Archiving or deleting a participant is
-one `cp -r` or `rm -rf` of their directory.
 
 ## License
 
