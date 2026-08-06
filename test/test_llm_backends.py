@@ -272,6 +272,20 @@ check("same in english",
            "mission_meta": LEAKY, "hint_level": 1}))
 check("but the MODEL still gets intent_lang as grounding",
       sent("chat", 1)["mission_meta"]["intent_lang"] == "But : le haut du donjon.")
+POISON = {"intent": "x", "intent_lang": {"fr": "INTENT_LEAK", "en": "INTENT_LEAK"},
+          "hints": {"fr": ["RUNG2_LEAK", "RUNG3_LEAK", "RUNG4_LEAK"],
+                    "en": ["RUNG2_LEAK", "RUNG3_LEAK", "RUNG4_LEAK"]},
+          "idiom_review": {"fr": "IDIOM_LEAK", "en": "IDIOM_LEAK"},
+          "danger_note": "DANGER_LEAK"}
+for lang in ("fr", "en"):
+    b = llm.MockLLMClient().respond(
+        {"kind": "mission_start", "lang": lang, "mission_goal": "Montez.",
+         "mission_name": "basic/01", "mission_nb": "1",
+         "mission_meta": POISON, "hint_level": 4})
+    check("[%s] no hint rung reaches a briefing, even at level 4" % lang,
+          not any(k in b for k in ("RUNG2_LEAK", "RUNG3_LEAK", "RUNG4_LEAK")))
+    check("[%s] no intent_lang, idiom or danger note either" % lang,
+          not any(k in b for k in ("INTENT_LEAK", "IDIOM_LEAK", "DANGER_LEAK")))
 check("no goal text: the greet fallback may still use it",
       "A/B/C/D" in llm.MockLLMClient().respond(
           {"kind": "mission_start", "lang": "fr", "mission_goal": "",
