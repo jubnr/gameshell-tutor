@@ -96,6 +96,10 @@ merchant's stall, the potion lab, and so on) above the briefing.
   only the rungs already unlocked, never the solution in advance.
 - **Diagnosis from the real error**: the shell's messages are quoted, not
   paraphrased from memory.
+- **A word on every victory**: the Game Master congratulates you in his own
+  voice, notes whether you were quick or had to persevere, and names the
+  commands you have now mastered. Everything he claims comes from what you
+  really did.
 - **Idiomatic review** after a success: the tutor rereads the commands you
   actually used and offers the shorter version, with its tradeoffs.
 - **Never re-explain a mastered concept**: every command carries a
@@ -172,6 +176,9 @@ questgen/questgen.py --example --out /tmp/quest          # offline
 python3 test/test_llm_backends.py            # LLM wiring, fake local server
 python3 test/replay.py <session-dir>         # replay a session on the mock
 ```
+
+Both are plain scripts and exit non-zero on failure, so they slot into any
+runner you like.
 
 **Side panel** (the older layout): `./play.sh --pane` opens a tmux split with
 the tutor on the right, using `/hint` and `/persona`.
