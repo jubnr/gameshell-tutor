@@ -91,6 +91,21 @@ scan_unsafe_checks() {
     n=$((n+1))
   done < <(find "$missions" -name check.sh 2>/dev/null | sort)
   echo "  $n mission(s) probed with writes neutralised -> $out"
+
+  # Checks that ASK the learner something ("What is the secret key?"): they
+  # `read` from stdin, so the silent probe (stdin closed) can never pass them.
+  # The shim launches these for real instead, so the learner never has to know
+  # a command to submit an answer.
+  local iout="$TUTOR_HOME/interactive-check.list" m=0
+  : > "$iout"
+  while IFS= read -r f; do
+    grep -qE '(^|[;&|`$(]|[[:space:]])read[[:space:]]+(-[A-Za-z]+[[:space:]]+)*[A-Za-z_]' \
+      "$f" 2>/dev/null || continue
+    name=$(dirname "$f"); name=${name#"$missions"/}
+    printf '%s\n' "$name" >> "$iout"
+    m=$((m+1))
+  done < <(find "$missions" -name check.sh 2>/dev/null | sort)
+  echo "  $m mission(s) with an interactive check -> $iout"
   # a stale no-autocheck.list from an older install would still disable them
   rm -f "$TUTOR_HOME/no-autocheck.list"
 }

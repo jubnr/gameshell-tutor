@@ -78,10 +78,21 @@ fi
 TARGET=$(ls -t "$DIR"/*-save*.sh 2>/dev/null | head -n1)
 TARGET=${TARGET:-$DIR/game.sh}
 
+SHARED="${GSH_TUTOR_HOME_SHARED:-$HOME/.local/share/gameshell-tutor}"
+
+# Seed the subject's config from the shared one. Without this the subject's
+# tutor home has no config.json, load_config falls back to its built-in
+# default of llm=mock, and the participant silently gets the canned offline
+# tutor instead of the model you configured. Copied rather than symlinked, so
+# each participant's directory records what they actually ran with.
+if [ -f "$SHARED/config.json" ] && [ ! -e "$DIR/tutor/config.json" ]; then
+  cp "$SHARED/config.json" "$DIR/tutor/config.json"
+  echo "[subject] config: $(tr -d '\n ' < "$DIR/tutor/config.json")"
+fi
+
 # Share the RAG index: same for everyone, slow to rebuild, read-only at play.
-SHARED_RAG="${GSH_TUTOR_HOME_SHARED:-$HOME/.local/share/gameshell-tutor}/rag"
-if [ -d "$SHARED_RAG" ] && [ ! -e "$DIR/tutor/rag" ]; then
-  ln -s "$SHARED_RAG" "$DIR/tutor/rag"
+if [ -d "$SHARED/rag" ] && [ ! -e "$DIR/tutor/rag" ]; then
+  ln -s "$SHARED/rag" "$DIR/tutor/rag"
 fi
 
 echo "[subject] $SUBJ  game=$(basename "$TARGET")  data=$DIR"

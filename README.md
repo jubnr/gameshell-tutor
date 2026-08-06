@@ -109,8 +109,13 @@ French aliases work too: `indice`, `mission`, `fini`, `parchemin`, `quitter`,
 **Success is detected automatically.** After each command the shim silently
 evaluates the mission's own `check.sh`; if it passes, it triggers the engine's
 real check: congratulations, treasure, next mission and its briefing in one
-go. Interactive checks (the merchant asking a question) cannot pass silently,
-so run `gm check` for those.
+go.
+
+Ten missions end in a viva instead: the check asks you something ("what is the
+secret key?") and the answer lives only in your head, so no inspection of the
+filesystem can settle it. The Game Master launches those for you once you have
+run a command, and again every few commands until you win. A wrong answer
+costs nothing there. Either way you never type a command to be graded.
 
 Every mission family opens with its own ASCII scene (the keep, the maze, the
 merchant's stall, the potion lab, and so on) above the briefing.

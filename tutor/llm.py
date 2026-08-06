@@ -141,12 +141,39 @@ GM_COMMAND_MAP = (
 # their `gm fini` rename from GM_COMMAND_MAP.
 DROPPED_COMMAND_ENTRIES = ("gsh check",)
 
+# Sentences that ORDER the learner to run the check. The Game Master now
+# launches interactive checks himself (shim: interactive-check.list), so these
+# would send the learner hunting for a command they never need. Applied before
+# GM_COMMAND_MAP, which would otherwise turn them into `gm fini`.
+# Only imperatives are rewritten; descriptive references such as the pipe
+# missions' "your last command before the check must ..." still mean something
+# and are left alone.
+GOAL_SENTENCE_REWRITES = (
+    ("Lancez la commande ``gsh check`` pour commencer.",
+     "Je lance l'épreuve dès que tu auras tapé une commande."),
+    ("Run the command ``gsh check`` to start.",
+     "I will start the trial as soon as you type a command."),
+    ("Lorsque vous le connaissez, lancez la commande ``gsh check``.",
+     "Quand tu le sauras, je te poserai la question moi-même."),
+    ("When you have it, run the command ``gsh check``.",
+     "When you have it, I will ask you for it myself."),
+    # descriptive references: drop the command name, keep the meaning. The
+    # pipe missions constrain the last command before the check, which still
+    # holds now the check runs by itself. Order matters, the full sentences
+    # above are rewritten first so these fragments cannot match inside them.
+    ("avant ``gsh check`` ", ""),
+    ("prior to ``gsh check`` ", ""),
+    ("commande ``gsh check``.", "vérification."),
+    ("when you call the ``gsh check`` command", "at the moment of the check"),
+)
+
 # Bump when the SHAPE of a briefing changes (sections added or removed, order
 # altered). The narration cache fingerprint hashes the data that feeds a
 # briefing (templates, command map, art), which cannot notice a change in the
 # rendering code itself, so cached briefings would otherwise survive one.
 # 2: intent_lang no longer shown to the learner (it leaked the solution).
-NARRATION_FORMAT = 2
+# 3: sentences ordering the learner to run the check are rewritten.
+NARRATION_FORMAT = 3
 
 
 def drop_command_entry(body, cmd):
@@ -212,8 +239,18 @@ class MockLLMClient(LLMClient):
                 # goal texts sometimes teach the engine's own gsh commands.
                 # Drop the ones the GM frontend has taken over entirely, then
                 # rename what is left (content otherwise stays verbatim).
+                # Goal texts are hard-wrapped, so a command name can be
+                # split across lines ("``gsh \ncheck``"). Literal renaming
+                # never matched those and left raw `gsh` on screen. Collapse
+                # whitespace inside double-backtick spans first, so every
+                # rewrite below sees one canonical form.
+                body = re.sub(r"``([^`]*?)``",
+                              lambda m: "``%s``" % " ".join(m.group(1).split()),
+                              body, flags=re.S)
                 for cmd in DROPPED_COMMAND_ENTRIES:
                     body = drop_command_entry(body, cmd)
+                for phrase, replacement in GOAL_SENTENCE_REWRITES:
+                    body = body.replace(phrase, replacement)
                 for old, new in GM_COMMAND_MAP:
                     body = body.replace(old, new)
                 # page breaks (\x06): the GM pauses before each section and

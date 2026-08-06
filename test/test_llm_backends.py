@@ -292,6 +292,28 @@ check("no goal text: the greet fallback may still use it",
            "mission_name": "basic/01", "mission_nb": "1",
            "mission_meta": LEAKY, "hint_level": 1}))
 
+print("== the learner is never told to run a check ==")
+WRAPPED = """Objectif
+========
+
+Lancez la commande ``gsh check`` pour commencer.
+
+NOTE : reinitialisez avec la commande ``gsh
+reset`` si besoin, et votre derniere commande avant ``gsh check`` doit
+montrer le total.
+"""
+b = llm.MockLLMClient().respond(
+    {"kind": "mission_start", "lang": "fr", "mission_goal": WRAPPED,
+     "mission_name": "x/01", "mission_nb": "1", "mission_meta": {},
+     "hint_level": 1})
+check("the imperative to run the check is rewritten",
+      "Je lance l'epreuve" in b or "Je lance l'épreuve" in b)
+check("no `gm fini` anywhere in the briefing", "gm fini" not in b)
+check("a command split across lines is still renamed", "gm reset" in b)
+check("no raw `gsh` survives", "gsh" not in b)
+check("the descriptive constraint keeps its meaning",
+      "derniere commande doit" in b)
+
 print("== resolve_backend precedence ==")
 for var in ("GSH_TUTOR_LLM_BACKEND", "GSH_TUTOR_LLM_URL"):
     os.environ.pop(var, None)

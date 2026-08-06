@@ -56,7 +56,20 @@ then
       [ -n "$_m" ] && _TUTOR_SANDBOX="$_TUTOR_SANDBOX$_m|"
     done < "$_TUTOR_HOME/sandbox-check.list"
   fi
+
+  # Missions whose check ASKS the learner something ("What is the secret
+  # key?"). It reads stdin, so the silent probe (stdin closed) can never pass
+  # it: the answer only exists in the learner's head. The Game Master launches
+  # the real check for them instead, so no command has to be memorised.
+  _TUTOR_INTERACTIVE="|"
+  if [ -r "$_TUTOR_HOME/interactive-check.list" ]; then
+    while IFS= read -r _m; do
+      [ -n "$_m" ] && _TUTOR_INTERACTIVE="$_TUTOR_INTERACTIVE$_m|"
+    done < "$_TUTOR_HOME/interactive-check.list"
+  fi
   unset _m
+  _TUTOR_MNB=""      # mission the command counter below belongs to
+  _TUTOR_MCMDS=0     # real commands the learner ran in that mission
 
   _tutor_esc() {
     # minimal JSON string escaping
@@ -139,6 +152,24 @@ then
     [ -n "$nb" ] || return 0
     dir=$(missiondir "$nb" 2>/dev/null)
     [ -n "$dir" ] && [ -f "$dir/check.sh" ] || return 0
+
+    # count real commands within the current mission (reset when it changes)
+    if [ "$nb" != "$_TUTOR_MNB" ]; then _TUTOR_MNB=$nb; _TUTOR_MCMDS=0; fi
+    _TUTOR_MCMDS=$((_TUTOR_MCMDS + 1))
+
+    # An interactive check cannot be probed, so run the real one: once the
+    # learner has done something (1st command), then every 3rd after that
+    # until they win. A wrong answer costs nothing here, the check simply
+    # fails and comes round again.
+    case "$_TUTOR_INTERACTIVE" in
+      *"|${dir#*/missions/}|"*)
+        if [ $((_TUTOR_MCMDS % 3)) = 1 ]; then
+          echo
+          _tutor_run_check
+        fi
+        return 0 ;;
+    esac
+
     # a subshell contains variables and $PWD, NOT filesystem writes. For the
     # checks that tidy the world away when they fail, shadow the destructive
     # commands on PATH so the probe keeps its verdict and loses its bite.
