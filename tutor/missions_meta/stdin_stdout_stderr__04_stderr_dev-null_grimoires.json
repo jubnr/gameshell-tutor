@@ -1,0 +1,28 @@
+{
+ "mission": "stdin_stdout_stderr/04_stderr_dev-null_grimoires",
+ "intent": "Your last command must use grep and print exactly the list of readable grimoires in Merlin's office that contain 'gsh' in any letter case (order does not matter — the check sorts it), while producing zero error output: the 'Permission denied' errors from the locked grimoires must be silenced.",
+ "intent_lang": {
+  "fr": "But : afficher la liste des grimoires du Bureau_de_Merlin qui contiennent « gsh » (majuscules/minuscules mélangées), rien d'autre — les erreurs « Permission denied » des grimoires cadenassés doivent disparaître.",
+  "en": "Goal: list the grimoires in Merlin_s_office that contain 'gsh' (mixed upper/lowercase), and nothing else — the 'Permission denied' errors from the locked grimoires must vanish."
+ },
+ "concepts": ["grep -l", "grep -i", "2>", "/dev/null", "stdout vs stderr"],
+ "danger_note": "/dev/null swallows data forever and `>` overwrites its target: redirect only stderr (2>) to /dev/null, and never redirect anything into the grimoires themselves.",
+ "open_solution": true,
+ "hints": {
+  "fr": [
+   "Niveau concept : une commande a DEUX sorties distinctes : stdout (le résultat) et stderr (les plaintes), mélangées à l'écran mais redirigeables séparément — `2> FICHIER` détourne stderr. Côté recherche : `grep -l` n'affiche que les NOMS des fichiers qui contiennent le motif, et `-i` ignore la casse. Que va raconter `grep` en tombant sur un grimoire cadenassé (illisible) ?",
+   "Piste concrète : va dans `~/Chateau/Batiment_principal/Bibliotheque/Bureau_de_Merlin`. `grep -il gsh grimoire_*` donne la bonne liste sur stdout… mais crache des « Permission denied » sur stderr pour chaque grimoire verrouillé. Le puits sans fond `/dev/null` est fait pour avaler ces erreurs.",
+   "Une solution possible : depuis `Bureau_de_Merlin` : `grep -il gsh grimoire_* 2> /dev/null` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: a command has TWO distinct outputs: stdout (the result) and stderr (the complaints), mixed on screen but redirectable separately — `2> FILE` diverts stderr. On the search side: `grep -l` prints only the NAMES of matching files, and `-i` ignores case. What will `grep` say when it hits a locked (unreadable) grimoire?",
+   "Concrete lead: go to `~/Castle/Main_building/Library/Merlin_s_office`. `grep -il gsh grimoire_*` puts the right list on stdout… but spits 'Permission denied' on stderr for every locked grimoire. The bottomless pit `/dev/null` exists to swallow those errors.",
+   "One possible solution: from `Merlin_s_office`: `grep -il gsh grimoire_* 2> /dev/null` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "2>",
+ "idiom_review": {
+  "fr": "Compare les variantes : `grep -il gsh grimoire_* 2> /dev/null` (mécanisme universel — marche avec N'IMPORTE quelle commande) vs `grep -sil gsh grimoire_*` (l'option `-s` de grep tait ses propres erreurs — concis mais propre à grep). Retiens surtout `2> /dev/null` : c'est l'idiome passe-partout pour faire taire stderr sans toucher au résultat.",
+  "en": "Compare the variants: `grep -il gsh grimoire_* 2> /dev/null` (a universal mechanism — works with ANY command) vs `grep -sil gsh grimoire_*` (grep's `-s` option mutes its own errors — concise but grep-specific). Above all remember `2> /dev/null`: the all-purpose idiom to silence stderr without touching the result."
+ }
+}

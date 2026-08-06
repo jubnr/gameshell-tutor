@@ -1,0 +1,26 @@
+{
+ "mission": "basic/02_cd.._cellar",
+ "intent": "Be standing in $GSH_HOME/Castle/Cellar when the check runs (it compares the resolved PWD to that path); the secondary objective is understanding `cd ..` vs `cd -`.",
+ "intent_lang": {
+  "fr": "But : te trouver dans la cave du château (Chateau/Cave).",
+  "en": "Goal: be standing in the castle's cellar (Castle/Cellar)."
+ },
+ "concepts": ["cd ..", "cd -", "pwd"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cd ..` remonte au répertoire PARENT (un cran en arrière dans le chemin de `pwd`), alors que `cd -` retourne au lieu PRÉCÉDENT de ton historique, où qu'il soit. Si tu viens de sauter directement en haut du donjon, ces deux commandes t'emmènent-elles au même endroit ?",
+   "Piste concrète : la Cave se trouve dans `~/Chateau`. Depuis le haut du donjon, redescends avec plusieurs `cd ..` jusqu'à `~/Chateau` (vérifie avec `pwd`), puis entre dans `Cave` — tu y trouveras un `tonneau_de_pommes`.",
+   "La commande : depuis n'importe où : `cd ~/Chateau/Cave` (ou remonte avec `cd ..` jusqu'à `~/Chateau` puis `cd Cave`) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cd ..` climbs to the PARENT directory (one step back along the `pwd` path), while `cd -` jumps back to the PREVIOUS location in your history, wherever that was. If you just teleported straight to the top of the tower, do these two commands take you to the same place?",
+   "Concrete lead: the Cellar lives inside `~/Castle`. From the top of the tower, climb down with several `cd ..` until you reach `~/Castle` (check with `pwd`), then enter `Cellar` — you will find a `barrel_of_apples` there.",
+   "The command: from anywhere: `cd ~/Castle/Cellar` (or climb with `cd ..` up to `~/Castle` then `cd Cellar`) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cd ..",
+ "idiom_review": {
+  "fr": "Version pro : `cd -` bascule instantanément entre tes deux derniers lieux — très pratique pour faire l'aller-retour. Compromis : `cd -` dépend de ton historique de déplacements, alors que `cd ..` est structurel : il remonte toujours d'un cran dans le chemin, quoi qu'il arrive.",
+  "en": "Pro version: `cd -` instantly toggles between your last two locations — very handy for going back and forth. Tradeoff: `cd -` depends on your movement history, while `cd ..` is structural: it always climbs one step up the path, no matter what."
+ }
+}

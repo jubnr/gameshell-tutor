@@ -1,0 +1,32 @@
+{
+ "mission": "intermediate/02_alias_journal",
+ "intent": "Define an alias `journal` that opens the journal with the editor ($EDITOR, nano by default) on a path that resolves to ~/Forest/Hut/Chest/journal.txt even when evaluated from another directory. Success = the alias exists, uses the editor, and its target path is absolute (or ~-based) and points to the chest's journal.txt.",
+ "intent_lang": {
+  "fr": "But : créer un alias `journal` qui ouvre ton journal avec `nano` depuis n'importe où — donc avec un chemin complet.",
+  "en": "Goal: create an alias `journal` that opens your journal with `nano` from anywhere — hence with a full path."
+ },
+ "concepts": [
+  "alias",
+  "nano",
+  "chemins absolus",
+  "~",
+  "$EDITOR"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : un alias rejoue toujours la même commande, quel que soit le répertoire où tu te trouves. Si l'alias contient un chemin relatif comme `journal.txt`, que se passera-t-il quand tu l'utiliseras depuis la cave ? Quel type de chemin fonctionne partout ?",
+   "Piste concrète : ton journal est le fichier `journal.txt` dans ton coffre, `~/Foret/Hutte/Coffre`. Mets le chemin complet (avec `~`) dans l'alias, entre apostrophes : `alias journal='nano CHEMIN'`. Teste ensuite depuis un autre répertoire.",
+   "La commande : `alias journal='nano ~/Foret/Hutte/Coffre/journal.txt'` (teste en tapant `journal` depuis n'importe où, quitte nano avec Ctrl-X) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: an alias replays the exact same command wherever you are. If the alias contains a relative path like `journal.txt`, what will happen when you use it from the cellar? What kind of path works from anywhere?",
+   "Concrete lead: your journal is the file `journal.txt` in your chest, `~/Forest/Hut/Chest`. Put the full path (with `~`) inside the alias, in single quotes: `alias journal='nano PATH'`. Then test it from another directory.",
+   "The command: `alias journal='nano ~/Forest/Hut/Chest/journal.txt'` (test it by typing `journal` from anywhere, quit nano with Ctrl-X) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "nano journal.txt",
+ "idiom_review": {
+  "fr": "Version pro : `alias journal='$EDITOR ~/Foret/Hutte/Coffre/journal.txt'` avec la variable `EDITOR` te laisse changer d'éditeur sans retoucher l'alias (le jeu l'accepte aussi). Compromis : cela suppose que `EDITOR` soit définie ; avec les apostrophes simples, `$EDITOR` est évaluée au moment de l'usage, pas de la définition — c'est exactement ce qu'on veut ici. Attention : un chemin relatif dans l'alias serait rejeté, car il ne désigne le bon fichier que depuis un seul répertoire.",
+  "en": "Pro version: `alias journal='$EDITOR ~/Forest/Hut/Chest/journal.txt'` with the `EDITOR` variable lets you switch editors without touching the alias (the game accepts it too). Tradeoff: it assumes `EDITOR` is set; with single quotes, `$EDITOR` is evaluated when the alias is used, not when it is defined — exactly what we want here. Beware: a relative path in the alias would be rejected, since it only points to the right file from one single directory."
+ }
+}

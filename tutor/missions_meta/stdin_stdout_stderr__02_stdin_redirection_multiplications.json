@@ -1,0 +1,26 @@
+{
+ "mission": "stdin_stdout_stderr/02_stdin_redirection_multiplications",
+ "intent": "Answer 100 multiplication questions in under 10 seconds — impossible by hand: the check must read its answers from the Mathematics_101 book (one answer per line, in order) via stdin redirection with '<'.",
+ "intent_lang": {
+  "fr": "But : répondre à 100 multiplications en moins de 10 secondes — mission impossible au clavier : il faut rediriger l'entrée standard de l'épreuve depuis le livre `Mathematiques_en_premiere_annee` avec `<`.",
+  "en": "Goal: answer 100 multiplications in under 10 seconds — impossible at the keyboard: you must redirect the trial's standard input from the `Mathematics_101` book with `<`."
+ },
+ "concepts": ["<", "stdin redirection", "ls -a", "hidden files"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `COMMANDE < FICHIER` remplace l'entrée standard de la commande : au lieu de lire tes frappes au clavier, elle lit les lignes du fichier. 100 réponses en 10 secondes, aucun humain ne tape aussi vite… mais un fichier, si. Où le château cacherait-il les réponses ?",
+   "Piste concrète : dans la bibliothèque (`~/Chateau/Batiment_principal/Bibliotheque`), le livre `Mathematiques_en_premiere_annee` contient EXACTEMENT les 100 réponses, une par ligne et dans l'ordre des questions. Un carnet caché le confirme : `ls -a` révèle `.Comment_tricher_aux_examens` (les fichiers commençant par un point sont invisibles pour `ls` tout nu).",
+   "La solution : lance l'épreuve en lui branchant le livre sur l'entrée standard, c'est-à-dire en ajoutant `< Mathematiques_en_premiere_annee` à la commande de vérification, depuis la Bibliotheque — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: `COMMAND < FILE` replaces the command's standard input: instead of reading your keystrokes, it reads the file's lines. 100 answers in 10 seconds — no human types that fast… but a file does. Where would the castle hide the answers?",
+   "Concrete lead: in the library (`~/Castle/Main_building/Library`), the book `Mathematics_101` contains EXACTLY the 100 answers, one per line and in question order. A hidden notebook confirms it: `ls -a` reveals `.How_to_cheat_for_exams` (dot-files are invisible to a bare `ls`).",
+   "The solution: start the trial with the book plugged into its standard input, that is, append `< Mathematics_101` to the check command, from the Library — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "<",
+ "idiom_review": {
+  "fr": "Version pro : `commande < fichier` est l'idiome direct ; tu verras aussi `cat fichier | commande`, qui fait pareil en lançant un processus de plus (le fameux « useless use of cat »). La redirection `<` est plus sobre. Et note le duo découvert ici : `ls -a` pour débusquer les fichiers cachés en `.quelque_chose`.",
+  "en": "Pro version: `command < file` is the direct idiom; you will also meet `cat file | command`, which does the same with one extra process (the famous 'useless use of cat'). The `<` redirection is leaner. And note today's sidekick: `ls -a` to flush out hidden `.something` files."
+ }
+}

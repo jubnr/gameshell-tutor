@@ -1,0 +1,26 @@
+{
+ "mission": "basic/04_mkdir_chest",
+ "intent": "Have exactly one directory named Hut (case-insensitive) somewhere in $GSH_HOME/Forest and exactly one Chest directory inside it, so that $GSH_HOME/Forest/Hut/Chest exists.",
+ "intent_lang": {
+  "fr": "But : construire un répertoire Hutte dans la Foret, et un répertoire Coffre dans la Hutte (un seul de chaque).",
+  "en": "Goal: build a Hut directory in the Forest, and a Chest directory inside the Hut (exactly one of each)."
+ },
+ "concepts": ["mkdir", "cd", "ls"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `mkdir NOM` crée un nouveau répertoire dans le répertoire courant (ou à l'endroit indiqué par un chemin). Le lieu où tu te trouves — ou le chemin que tu donnes — décide donc où naît le répertoire. Où faut-il créer la Hutte pour qu'elle soit dans la forêt ?",
+   "Piste concrète : va dans `~/Foret` et crée un répertoire nommé exactement `Hutte` (majuscule au H !), puis crée `Coffre` À L'INTÉRIEUR de la hutte. Attention : un seul de chaque, et pas ailleurs. Vérifie avec `ls`.",
+   "La commande : depuis `~` : `mkdir Foret/Hutte` puis `mkdir Foret/Hutte/Coffre` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `mkdir NAME` creates a new directory inside the current directory (or wherever a path points). So where you stand — or the path you give — decides where the directory is born. Where must you create the Hut so it ends up in the forest?",
+   "Concrete lead: go to `~/Forest` and create a directory named exactly `Hut` (capital H!), then create `Chest` INSIDE the hut. Careful: exactly one of each, and nowhere else. Check with `ls`.",
+   "The command: from `~`: `mkdir Forest/Hut` then `mkdir Forest/Hut/Chest` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "mkdir ",
+ "idiom_review": {
+  "fr": "Version pro : `mkdir -p Foret/Hutte/Coffre` crée toute la chaîne de répertoires en une seule commande. Compromis : `-p` ne proteste jamais — si tu fais une faute de frappe dans le chemin, il crée silencieusement des répertoires au mauvais endroit.",
+  "en": "Pro version: `mkdir -p Forest/Hut/Chest` creates the whole chain of directories in a single command. Tradeoff: `-p` never complains — if you make a typo in the path, it silently creates directories in the wrong place."
+ }
+}

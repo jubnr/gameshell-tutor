@@ -1,0 +1,13 @@
+Mission goal
+============
+
+The pigeon master received twelve messages tonight, but only one is 
+urgent. Find which message_* file contains the word URGENT (without 
+opening all twelve: think of ``grep``), then write that file's name 
+into a file ``reponse.txt`` in the loft.
+
+Useful commands
+===============
+
+grep STRING FILE1 ... FILEn
+  Prints the lines containing the string.

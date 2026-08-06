@@ -1,0 +1,27 @@
+{
+ "mission": "pipe_intro_book_of_potions/02_tail",
+ "intent": "Be in the cave with Servillus, leave the potion book untouched, and have your last command (containing 'tail') print exactly the last 9 lines of Book_of_potions/page_12 — the stew's steps without its title.",
+ "intent_lang": {
+  "fr": "But : depuis la grotte, afficher les étapes du « Ragoût de champignons vénéneux » (SANS son titre) avec `tail`, sans modifier le livre de potions.",
+  "en": "Goal: from the cave, display the steps of the 'Toadstool stew' (WITHOUT its title) using `tail`, without altering the book of potions."
+ },
+ "concepts": ["tail", "tail -n", "cat", "head"],
+ "danger_note": "The check diffs the book of potions against a pristine copy: any `>` redirection into Book_of_potions/ (or any edit) fails the mission.",
+ "hints": {
+  "fr": [
+   "Niveau concept : `tail -n K FICHIER` affiche les K DERNIÈRES lignes — le miroir de `head`. Cette fois, il faut les étapes SANS le titre : que reste-t-il d'une page quand on enlève son titre du haut ?",
+   "Piste concrète : la table des matières (`cat Livre_de_potions/table_des_matieres`) place le « Ragoût de champignons vénéneux » page 12. Regarde la page avec `cat Livre_de_potions/page_12` : 3 lignes de titre puis 9 étapes numérotées — les 9 dernières lignes, donc. Et reste dans `~/Montagne/Grotte` pour valider.",
+   "La commande : depuis `~/Montagne/Grotte` : `tail -n 9 Livre_de_potions/page_12` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `tail -n K FILE` prints the LAST K lines — the mirror of `head`. This time you need the steps WITHOUT the title: what is left of a page once you strip its title from the top?",
+   "Concrete lead: the table of contents (`cat Book_of_potions/table_of_contents`) places the 'Toadstool stew' on page 12. Look at it with `cat Book_of_potions/page_12`: 3 title lines then 9 numbered steps — so the last 9 lines. And stay in `~/Mountain/Cave` to validate.",
+   "The command: from `~/Mountain/Cave`: `tail -n 9 Book_of_potions/page_12` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "tail",
+ "idiom_review": {
+  "fr": "Compare : `head` cadre depuis le début, `tail` depuis la fin. Compter depuis la fin (`tail -n 9`) évite de connaître la longueur totale de la page. Variante pro : `tail -n +4` signifie « à partir de la 4e ligne » — pratique quand on sait combien de lignes SAUTER plutôt que combien garder.",
+  "en": "Compare: `head` frames from the top, `tail` from the bottom. Counting from the end (`tail -n 9`) spares you from knowing the page's total length. Pro variant: `tail -n +4` means 'from line 4 on' — handy when you know how many lines to SKIP rather than how many to keep."
+ }
+}

@@ -1,0 +1,26 @@
+{
+ "mission": "basic/12_cp_ls_mtime_paintings_tower",
+ "intent": "Exactly one painting file may be in the chest: a copy (same name, intact content) of the OLDEST of the three painting_* files in $GSH_HOME/Castle/Main_tower/First_floor (their modification dates are ~1980s, ~1995-2004 and ~2010s); the original must stay in the tower.",
+ "intent_lang": {
+  "fr": "But : repérer le plus VIEUX des trois tableaux du Premier_etage du Donjon (via sa date de modification) et en mettre une copie — une seule — dans ton Coffre.",
+  "en": "Goal: spot the OLDEST of the three paintings on the tower's First_floor (via its modification date) and put a copy — just one — in your Chest."
+ },
+ "concepts": ["ls -l", "ls -t", "cp", "cat"],
+ "hints": {
+  "fr": [
+   "Niveau concept : chaque fichier porte une date de dernière modification. `ls -l` l'affiche pour chaque fichier, et `ls -t` trie carrément la liste par date. Comment repérer le PLUS VIEUX des trois tableaux sans ouvrir le grimoire des dates au hasard ?",
+   "Piste concrète : dans `~/Chateau/Donjon/Premier_etage`, trois fichiers `tableau_<lettres>` (noms aléatoires). `ls -l` montre leurs dates : l'un date des années 1980 — c'est le doyen. Admire-les avec `cat`, puis copie SEULEMENT le doyen (un seul tableau doit finir dans le coffre !).",
+   "La commande : depuis `~/Chateau/Donjon/Premier_etage` : `ls -lt tableau_*` (le plus vieux s'affiche en DERNIER), puis `cp <nom_du_tableau_le_plus_vieux> ~/Foret/Hutte/Coffre` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: every file carries a last-modification date. `ls -l` displays it for each file, and `ls -t` even sorts the list by date. How can you spot the OLDEST of the three paintings without guessing?",
+   "Concrete lead: in `~/Castle/Main_tower/First_floor`, three files `painting_<letters>` (random names). `ls -l` shows their dates: one is from the 1980s — that is the elder. Admire them with `cat`, then copy ONLY the elder (exactly one painting may end up in the chest!).",
+   "The command: from `~/Castle/Main_tower/First_floor`: `ls -lt painting_*` (the oldest appears LAST), then `cp <name_of_the_oldest_painting> ~/Forest/Hut/Chest` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "ls -l",
+ "idiom_review": {
+  "fr": "Version pro : `ls -rt` trie du plus vieux au plus récent — le doyen arrive en TÊTE de liste, pratique pour le lire d'un coup d'œil ou l'attraper dans un script. Compromis : `-t`/`-rt` cachent les dates exactes si tu omets `-l` ; en cas de doute, `ls -lrt` combine tri et détails.",
+  "en": "Pro version: `ls -rt` sorts from oldest to newest — the elder comes FIRST in the list, handy to read at a glance or grab in a script. Tradeoff: `-t`/`-rt` hide the exact dates if you omit `-l`; when in doubt, `ls -lrt` combines sorting and details."
+ }
+}

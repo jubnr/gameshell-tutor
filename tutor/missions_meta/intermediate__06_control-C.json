@@ -1,0 +1,32 @@
+{
+ "mission": "intermediate/06_control-C",
+ "intent": "Run `charmiglio XXXX` with 4-letter codes, never reusing a code: wrong codes start an endless dud reaction that must be interrupted with Ctrl-C (but only after the first ~2 seconds, or the try does not count). After 2-4 counted tries the next fresh code succeeds and prints the valid incantation. The interactive check then asks for that exact 4-letter sequence.",
+ "intent_lang": {
+  "fr": "But : trouver l'incantation de 4 lettres de `charmiglio` en interrompant chaque essai raté avec Ctrl-C, et retenir les 4 lettres gagnantes pour répondre à la question finale.",
+  "en": "Goal: find the 4-letter `charmiglio` incantation by interrupting each failed try with Ctrl-C, and remember the winning 4 letters to answer the final question."
+ },
+ "concepts": [
+  "Ctrl-C",
+  "signal INT",
+  "processus au premier plan",
+  "essais successifs"
+ ],
+ "danger_note": "Ctrl-C during the first ~2 seconds aborts the try without counting it; a dud reaction left alone runs for up to 10 minutes. Never reuse a 4-letter code.",
+ "hints": {
+  "fr": [
+   "Niveau concept : quand une commande au premier plan ne finit jamais, Ctrl-C envoie le signal INT au processus pour l'interrompre — c'est le geste de survie du shell. Ici, une mauvaise incantation `charmiglio` peut mijoter 10 minutes : que faire au lieu d'attendre ?",
+   "Piste concrète : tape `charmiglio` suivi de 4 lettres (ex. `charmiglio abcd`). Laisse la réaction magique démarrer quelques secondes (Ctrl-C trop tôt et l'essai ne compte pas !), puis interromps-la avec Ctrl-C. Recommence avec une NOUVELLE combinaison à chaque fois (les codes déjà essayés sont refusés). Après quelques essais, l'un d'eux réussit et affiche « l'incantation spéciale est XXXX » : note précieusement ces 4 lettres.",
+   "La méthode : répète `charmiglio <4 lettres inédites>` puis Ctrl-C après quelques secondes, jusqu'au feu d'artifice ; retiens les 4 lettres affichées (je te demanderai la séquence) — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: when a foreground command never finishes, Ctrl-C sends the INT signal to interrupt the process — it is the shell's survival move. Here, a wrong `charmiglio` incantation can simmer for 10 minutes: what should you do instead of waiting?",
+   "Concrete lead: type `charmiglio` followed by 4 letters (e.g. `charmiglio abcd`). Let the magical reaction start for a few seconds (Ctrl-C too early and the try does not count!), then interrupt it with Ctrl-C. Use a NEW combination every time (already-tried codes are refused). After a few tries, one succeeds and prints \"the special incantation is XXXX\": write those 4 letters down.",
+   "The method: repeat `charmiglio <4 fresh letters>` then Ctrl-C after a few seconds, until the fireworks go off; remember the 4 letters shown (I will ask you for the sequence) — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "charmiglio abcd",
+ "idiom_review": {
+  "fr": "Version pro : Ctrl-C envoie SIGINT, que le programme peut intercepter (c'est ce que fait `charmiglio` pour compter tes essais) ; si un processus ignore vraiment SIGINT, on le tue depuis un autre terminal avec `kill PID`, voire `kill -9 PID` en dernier recours. Compromis : `kill -9` ne peut pas être intercepté, donc le programme ne peut rien nettoyer avant de mourir — Ctrl-C d'abord, toujours.",
+  "en": "Pro version: Ctrl-C sends SIGINT, which a program may catch (that is how `charmiglio` counts your tries); if a process truly ignores SIGINT, kill it from another terminal with `kill PID`, or `kill -9 PID` as a last resort. Tradeoff: `kill -9` cannot be caught, so the program gets no chance to clean up before dying — always try Ctrl-C first."
+ }
+}

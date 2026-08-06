@@ -1,0 +1,31 @@
+{
+ "mission": "permissions/01_chmod_x_dir_king_quarter",
+ "intent": "The directory ~/Castle/Main_building/Throne_room/Kings_quarter had its execute (x) permission removed, so cd into it is denied. Success = your current working directory IS Kings_quarter at validation time, which requires restoring x on the directory first.",
+ "intent_lang": {
+  "fr": "But : rendre au répertoire Chambre_du_roi son droit x avec `chmod`, puis entrer dedans et y rester.",
+  "en": "Goal: give the Kings_quarter directory its x permission back with `chmod`, then enter it and stay there."
+ },
+ "concepts": [
+  "chmod",
+  "droit x sur un répertoire",
+  "ls -l",
+  "cd"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : sur un RÉPERTOIRE, le droit `x` signifie « le traverser » : sans lui, `cd` répond « Permission non accordée » même si tu peux lister le contenu. `ls -l` affiche les droits au début de chaque ligne (r, w, x pour toi/le groupe/les autres). Qui a retiré quoi à la porte de la chambre du roi ?",
+   "Piste concrète : va dans `~/Chateau/Batiment_principal/Salle_du_trone` et fais `ls -l` : la ligne de `Chambre_du_roi` commence par `d` mais sans `x` (quelque chose comme `drw-------`). Rends-toi le droit de passage avec `chmod u+x Chambre_du_roi`, puis entre.",
+   "Les commandes : `cd ~/Chateau/Batiment_principal/Salle_du_trone`, puis `chmod u+x Chambre_du_roi`, puis `cd Chambre_du_roi` — et reste dans la chambre — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: on a DIRECTORY, the `x` permission means \"traverse it\": without it, `cd` answers \"Permission denied\" even if you can list the contents. `ls -l` shows the permissions at the start of each line (r, w, x for you/the group/others). Who removed what from the King's door?",
+   "Concrete lead: go to `~/Castle/Main_building/Throne_room` and run `ls -l`: the `Kings_quarter` line starts with `d` but has no `x` (something like `drw-------`). Give yourself passage back with `chmod u+x Kings_quarter`, then walk in.",
+   "The commands: `cd ~/Castle/Main_building/Throne_room`, then `chmod u+x Kings_quarter`, then `cd Kings_quarter` — and stay in the room — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "chmod 777",
+ "idiom_review": {
+  "fr": "Version pro : `chmod u+x` ne donne le droit qu'à toi (u = user, le propriétaire) — c'est le principe du moindre privilège. `chmod 777` « marche » aussi mais ouvre la porte à tout le monde (groupe et autres, en lecture/écriture/exécution) : un réflexe dangereux à bannir. Compromis : la notation symbolique (u+x, g-w...) est chirurgicale et lisible ; la notation octale (755, 644) est plus rapide quand on veut fixer TOUS les droits d'un coup.",
+  "en": "Pro version: `chmod u+x` grants the right to you alone (u = user, the owner) — that is the principle of least privilege. `chmod 777` also \"works\" but opens the door to everyone (group and others, read/write/execute): a dangerous reflex to ban. Tradeoff: symbolic notation (u+x, g-w...) is surgical and readable; octal notation (755, 644) is faster when you want to set ALL the permissions at once."
+ }
+}

@@ -1,0 +1,67 @@
+{
+ "dir": "Pigeonnier",
+ "quest_name": "quest_pigeon_loft",
+ "goal": {
+  "fr": "Objectif\n========\n\nLe maître des pigeons a reçu douze messages cette nuit, mais un seul \nest urgent. Trouvez lequel des fichiers message_* contient le mot \nURGENT (sans ouvrir les douze un par un : pensez à ``grep``), puis \nécrivez le nom de ce fichier dans un fichier ``reponse.txt`` dans le \nPigeonnier.\n\nCommandes utiles\n================\n\ngrep CHAINE FICHIER1 ... FICHIERn\n  Affiche les lignes contenant la chaine (le nom du fichier est \n  indiqué s'il y a plusieurs fichiers).\n",
+  "en": "Mission goal\n============\n\nThe pigeon master received twelve messages tonight, but only one is \nurgent. Find which message_* file contains the word URGENT (without \nopening all twelve: think of ``grep``), then write that file's name \ninto a file ``reponse.txt`` in the loft.\n\nUseful commands\n===============\n\ngrep STRING FILE1 ... FILEn\n  Prints the lines containing the string.\n"
+ },
+ "files": [
+  {
+   "path": "message_01",
+   "content": "Le marché aura lieu jeudi.\n"
+  },
+  {
+   "path": "message_02",
+   "content": "La récolte de pommes est bonne.\n"
+  },
+  {
+   "path": "message_03",
+   "content": "Rien à signaler au moulin.\n"
+  },
+  {
+   "path": "message_04",
+   "content": "Le pont est réparé.\n"
+  },
+  {
+   "path": "message_05",
+   "content": "URGENT : le dragon approche du village par la Foret !\n"
+  },
+  {
+   "path": "message_06",
+   "content": "Les moutons sont rentrés.\n"
+  },
+  {
+   "path": "message_07",
+   "content": "Le puits est de nouveau propre.\n"
+  },
+  {
+   "path": "message_08",
+   "content": "La foire est reportée.\n"
+  },
+  {
+   "path": "message_09",
+   "content": "Le forgeron cherche un apprenti.\n"
+  },
+  {
+   "path": "message_10",
+   "content": "Trois poules se sont échappées.\n"
+  },
+  {
+   "path": "message_11",
+   "content": "Le boulanger offre du pain.\n"
+  },
+  {
+   "path": "message_12",
+   "content": "La chandelle du phare est changée.\n"
+  }
+ ],
+ "check": {
+  "type": "file_contains",
+  "path": "reponse.txt",
+  "needle": "message_05",
+  "fail_msg": {
+   "fr": "reponse.txt n'existe pas encore, ou ne contient pas le nom du bon message...",
+   "en": "reponse.txt does not exist yet, or does not contain the right message's name..."
+  }
+ }
+}

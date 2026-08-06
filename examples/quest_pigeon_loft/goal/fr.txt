@@ -1,0 +1,15 @@
+Objectif
+========
+
+Le maître des pigeons a reçu douze messages cette nuit, mais un seul 
+est urgent. Trouvez lequel des fichiers message_* contient le mot 
+URGENT (sans ouvrir les douze un par un : pensez à ``grep``), puis 
+écrivez le nom de ce fichier dans un fichier ``reponse.txt`` dans le 
+Pigeonnier.
+
+Commandes utiles
+================
+
+grep CHAINE FICHIER1 ... FICHIERn
+  Affiche les lignes contenant la chaine (le nom du fichier est 
+  indiqué s'il y a plusieurs fichiers).

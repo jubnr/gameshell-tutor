@@ -1,0 +1,28 @@
+{
+ "mission": "pipes_merchant_stall/02_pipe_2",
+ "intent": "Tell the merchant how many unpaid purchases the scroll lists, having typed at most ONE command line: the check asks for the number interactively and fails if the command counter shows more than one command. Any single pipeline that counts the lines without the PAID mark is valid.",
+ "intent_lang": {
+  "fr": "But : donner au marchand le nombre d'achats impayés du parchemin, en n'ayant tapé qu'UNE SEULE ligne de commande. Toute combinaison en une ligne qui compte les lignes sans la mention PAYÉ est valable.",
+  "en": "Goal: tell the merchant the number of unpaid purchases on the scroll, having typed only ONE command line. Any one-line combination that counts the lines without the PAID mark is valid."
+ },
+ "concepts": ["|", "grep -v", "wc -l", "grep -c", "globs"],
+ "danger_note": "Every command line you type is counted — more than one before answering fails the check (the game can regenerate the stall for a fresh counter). No exploratory ls this time!",
+ "open_solution": true,
+ "hints": {
+  "fr": [
+   "Niveau concept : un pipeline complet `commande1 | commande2` tapé sur UNE ligne ne compte que pour UNE commande — c'est toute la puissance du tube. `grep -v MOTIF` garde les lignes SANS le motif, et `wc -l` compte les lignes reçues. Les achats réglés portent la mention PAYÉ… à quoi ressemble donc un impayé ?",
+   "Piste concrète : tu connais l'échoppe (`~/Echoppe`) : le parchemin y a un nom contenant `p_a_r_c_h_e_m_i_n`, une ligne par achat, et les impayés sont les lignes SANS « PAYÉ ». Attention, tu n'as droit qu'à UNE ligne : pas de `ls` de repérage ! Un joker `*p_a_r_c_h_e_m_i_n*` désigne le parchemin sans connaître son nom exact.",
+   "Une solution possible (il y en a d'autres !) : `grep -v PAYÉ ~/Echoppe/*p_a_r_c_h_e_m_i_n* | wc -l` — retiens le nombre affiché, puis dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: a full pipeline `command1 | command2` typed on ONE line counts as ONE command — that is the whole power of the pipe. `grep -v PATTERN` keeps the lines WITHOUT the pattern, and `wc -l` counts the lines it receives. Settled purchases carry the PAID mark… so what does an unpaid one look like?",
+   "Concrete lead: you know the stall (`~/Stall`): the scroll's name contains `s_c_r_o_l_l`, one line per purchase, and the unpaid ones are the lines WITHOUT 'PAID'. Careful, you only get ONE line: no exploratory `ls`! A glob `*s_c_r_o_l_l*` targets the scroll without knowing its exact name.",
+   "One possible solution (there are others!): `grep -v PAID ~/Stall/*s_c_r_o_l_l* | wc -l` — remember the number it prints, then tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "wc",
+ "idiom_review": {
+  "fr": "Bien joué — le marchand accepte tout chemin correct en une ligne. Compare : `grep -v PAYÉ parchemin | wc -l` (deux outils, la logique se lit de gauche à droite) vs `grep -vc PAYÉ parchemin` (l'option `-c` de grep compte elle-même : plus court, un processus de moins). Les deux sont idiomatiques ; `-c` gagne quand on ne veut QUE le compte, le tube vers `wc -l` reste le réflexe généralisable à toute chaîne de filtres.",
+  "en": "Well done — the merchant accepts any correct one-line path. Compare: `grep -v PAID scroll | wc -l` (two tools, logic reads left to right) vs `grep -vc PAID scroll` (grep's `-c` option counts by itself: shorter, one fewer process). Both are idiomatic; `-c` wins when you only want the count, the pipe into `wc -l` remains the reflex that generalizes to any filter chain."
+ }
+}

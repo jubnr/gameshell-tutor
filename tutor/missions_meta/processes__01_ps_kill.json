@@ -1,0 +1,27 @@
+{
+ "mission": "processes/01_ps_kill",
+ "intent": "Terminate the imp's spell: the check passes when the PID recorded at mission start no longer corresponds to a running process named 'spell' (fr: 'sortilege').",
+ "intent_lang": {
+  "fr": "But : trouver le processus `sortilege` qui salit ton terminal de charbon, et l'arrêter avec `kill`.",
+  "en": "Goal: find the `spell` process that smears coal over your terminal, and stop it with `kill`."
+ },
+ "concepts": ["ps", "kill", "PID", "clear"],
+ "danger_note": "kill terminates a process immediately: target only the spell's PID — sending it to the wrong process (like your shell) would be unpleasant.",
+ "hints": {
+  "fr": [
+   "Niveau concept : tout programme en train de tourner est un PROCESSUS, identifié par un numéro unique, son PID. `ps` liste les processus lancés par ton shell, et `kill PID` envoie au processus le signal d'arrêt. Parmi les processus listés, lequel n'a rien à faire là ?",
+   "Piste concrète : lance `ps` : tu verras une ligne dont le nom est `sortilege` — c'est lui qui dessine du charbon toutes les quelques secondes. Note son PID (la colonne de numéros). Au besoin, `clear` (ou Ctrl-L) nettoie l'écran entre deux salissures.",
+   "La commande : `kill PID` en remplaçant PID par le numéro du `sortilege` vu dans `ps` (par exemple `kill 12345`) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: every running program is a PROCESS, identified by a unique number, its PID. `ps` lists the processes started by your shell, and `kill PID` sends the termination signal to a process. Among the listed processes, which one does not belong there?",
+   "Concrete lead: run `ps`: you will see a line named `spell` — that is what draws coal every few seconds. Note its PID (the number column). If needed, `clear` (or Ctrl-L) wipes the screen between two smudges.",
+   "The command: `kill PID`, replacing PID with the `spell` number seen in `ps` (for example `kill 12345`) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "kill",
+ "idiom_review": {
+  "fr": "Version pro : `pkill sortilege` tue par NOM sans chercher le PID — rapide, mais dangereux : le motif peut attraper plus de processus que prévu. L'idiome sûr reste `ps` pour identifier, puis `kill PID` ciblé. Et retiens : `kill` n'« efface » pas l'écran — c'est `clear`/Ctrl-L qui s'en charge.",
+  "en": "Pro version: `pkill spell` kills by NAME without hunting for the PID — fast, but risky: the pattern may catch more processes than intended. The safe idiom stays `ps` to identify, then a targeted `kill PID`. And remember: `kill` does not 'clean' the screen — `clear`/Ctrl-L does that."
+ }
+}

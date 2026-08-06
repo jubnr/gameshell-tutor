@@ -1,0 +1,26 @@
+{
+ "mission": "misc/03_tr_caesar_shift",
+ "intent": "Decrypt the Caesar-shifted secret_message in Merlin's drawer (random shift, the goal hints at 10-16) by exhaustive search with tr, to find the random 4-letter magic word it contains: the interactive check asks for that key and, if correct, makes Merlin's chest appear.",
+ "intent_lang": {
+  "fr": "But : décrypter le message_secret du Tiroir de Merlin avec tr (recherche exhaustive des décalages) et trouver le mot magique de 4 lettres qu'il révèle.",
+  "en": "Goal: decrypt the secret_message in Merlin's Drawer with tr (exhaustive search over shifts) and find the 4-letter magic word it reveals."
+ },
+ "concepts": ["tr", "redirection <", "cat"],
+ "hints": {
+  "fr": [
+   "Niveau concept : un chiffre de César décale chaque lettre de l'alphabet d'un cran fixe. `tr 'CHAINE1' 'CHAINE2' < fichier` remplace lettre à lettre : pour DÉCODER un décalage donné, on fait correspondre l'alphabet décalé vers `a-z`. L'indice dit que le décalage est entre 10 et 16 : combien d'essais au maximum te faudra-t-il ?",
+   "Piste concrète : le message est `~/Chateau/Batiment_principal/Bibliotheque/Bureau_de_Merlin/Tiroir/message_secret` (regarde-le chiffré avec `cat`). Pour tester un décalage de 13 par exemple : `tr 'n-za-m' 'a-z' < message_secret`. Fais reculer ou avancer la lettre de départ (`k-za-j` = 10, `l-za-k` = 11, etc.) jusqu'à obtenir du français lisible.",
+   "La commande : depuis le Tiroir, essaie tour à tour `tr 'k-za-j' 'a-z' < message_secret`, `tr 'l-za-k' 'a-z' < message_secret`, `tr 'm-za-l' 'a-z' < message_secret`, `tr 'n-za-m' 'a-z' < message_secret`… jusqu'à `tr 'q-za-p' 'a-z' < message_secret` (décalages 10 à 16). Quand le testament devient lisible, note le mot magique de 4 lettres — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: a Caesar cipher shifts every letter of the alphabet by a fixed amount. `tr 'STRING1' 'STRING2' < file` substitutes letter by letter: to DECODE a given shift, map the shifted alphabet back onto `a-z`. The hint says the shift is between 10 and 16: how many tries will you need at most?",
+   "Concrete lead: the message is `~/Castle/Main_building/Library/Merlin_s_office/Drawer/secret_message` (look at it encrypted with `cat`). To test a shift of 13 for example: `tr 'n-za-m' 'a-z' < secret_message`. Slide the starting letter (`k-za-j` = 10, `l-za-k` = 11, etc.) until you get readable English.",
+   "The command: from the Drawer, try in turn `tr 'k-za-j' 'a-z' < secret_message`, `tr 'l-za-k' 'a-z' < secret_message`, `tr 'm-za-l' 'a-z' < secret_message`, `tr 'n-za-m' 'a-z' < secret_message`… up to `tr 'q-za-p' 'a-z' < secret_message` (shifts 10 to 16). When the will becomes readable, note the 4-letter magic word — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "tr ",
+ "idiom_review": {
+  "fr": "Version pro : une boucle automatise la recherche exhaustive : `for s in k-za-j l-za-k m-za-l n-za-m o-za-n p-za-o q-za-p; do echo \"--- $s\"; tr \"$s\" 'a-z' < message_secret; done`. Compromis : la boucle affiche les sept décodages d'un coup, mais c'est toujours ton œil qui doit repérer la ligne lisible.",
+  "en": "Pro version: a loop automates the exhaustive search: `for s in k-za-j l-za-k m-za-l n-za-m o-za-n p-za-o q-za-p; do echo \"--- $s\"; tr \"$s\" 'a-z' < secret_message; done`. Tradeoff: the loop prints all seven decodings at once, but your eye still has to spot the readable one."
+ }
+}

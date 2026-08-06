@@ -1,0 +1,27 @@
+{
+ "mission": "basic/08_rm_wildcard_spiders_cellar",
+ "intent": "No file matching *_spider_* may remain in $GSH_HOME/Castle/Cellar, and the five bat files (*_bat_*) must be exactly untouched (their checksummed list is compared).",
+ "intent_lang": {
+  "fr": "But : supprimer les 50 araignées de la Cave d'un coup de joker, SANS toucher aux 5 chauves-souris.",
+  "en": "Goal: wipe out the 50 spiders in the Cellar with one wildcard, WITHOUT touching the 5 bats."
+ },
+ "concepts": ["rm", "jokers * et ?", "ls"],
+ "danger_note": "rm is irreversible and the wildcard hits everything it matches; the check fails if any bat is modified or removed.",
+ "hints": {
+  "fr": [
+   "Niveau concept : le joker `*` remplace n'importe quelle chaîne de caractères — un motif comme `*mot*` désigne donc tous les fichiers dont le nom contient `mot`. Et `rm` est définitif. Comment tester un motif SANS rien supprimer ?",
+   "Piste concrète : dans `~/Chateau/Cave` grouillent 50 fichiers `<nombre>_araignee_<n>` et 5 fichiers `<nombre>_chauve_souris_<n>` (les nombres changent à chaque partie). Le mot `araignee` n'apparaît que chez les araignées : vérifie ton motif avec `ls *araignee*` avant de dégainer `rm`.",
+   "La commande : depuis `~/Chateau/Cave` : d'abord `ls *araignee*` pour contrôler, puis `rm *araignee*` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: the `*` wildcard stands for any sequence of characters — so a pattern like `*word*` denotes every file whose name contains `word`. And `rm` is permanent. How can you test a pattern WITHOUT deleting anything?",
+   "Concrete lead: `~/Castle/Cellar` is crawling with 50 files `<number>_spider_<n>` and 5 files `<number>_bat_<n>` (the numbers change every game). The word `spider` only appears in spider names: check your pattern with `ls *spider*` before drawing `rm`.",
+   "The command: from `~/Castle/Cellar`: first `ls *spider*` to check, then `rm *spider*` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "rm *",
+ "idiom_review": {
+  "fr": "Version pro : avant tout `rm` avec joker, la routine des vétérans est `ls MOTIF` (ou `echo MOTIF`) pour voir exactement ce qui sera touché ; `rm -v` affiche ensuite chaque fichier supprimé. Compromis : c'est une étape de plus, mais avec 50 fichiers et des chauves-souris innocentes à côté, une seconde de vérification vaut mieux qu'un massacre irréversible.",
+  "en": "Pro version: before any wildcard `rm`, the veteran routine is `ls PATTERN` (or `echo PATTERN`) to see exactly what will be hit; `rm -v` then prints each deleted file. Tradeoff: it is one extra step, but with 50 files and innocent bats nearby, a second of checking beats an irreversible massacre."
+ }
+}

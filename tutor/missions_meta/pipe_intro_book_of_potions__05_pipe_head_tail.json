@@ -1,0 +1,28 @@
+{
+ "mission": "pipe_intro_book_of_potions/05_pipe_head_tail",
+ "intent": "Be in the cave with Servillus, leave the potion book untouched, and have your last command combine 'head' and 'tail' to print exactly the 3 steps of the distilled water recipe — the output of head -n 6 page_13 | tail -n 3 (page 13 also holds the King's ale below).",
+ "intent_lang": {
+  "fr": "But : depuis la grotte, afficher UNIQUEMENT les 3 étapes de l'« Eau distillée » (au MILIEU de la page 13, qui contient aussi la Bière du Roi), en combinant `head` et `tail` avec un tube.",
+  "en": "Goal: from the cave, display ONLY the 3 steps of 'Distilled water' (in the MIDDLE of page 13, which also holds the King's ale), by combining `head` and `tail` with a pipe."
+ },
+ "concepts": ["|", "head", "tail", "extracting a middle slice"],
+ "danger_note": "The check diffs the book of potions against a pristine copy: any `>` redirection into Book_of_potions/ (or any edit) fails the mission.",
+ "open_solution": true,
+ "hints": {
+  "fr": [
+   "Niveau concept : `head` seul prend le début, `tail` seul prend la fin… mais comment attraper le MILIEU d'un fichier ? En les enchaînant avec un tube : d'abord couper le bas, puis couper le haut (ou l'inverse). La validation exige d'ailleurs la combinaison des deux.",
+   "Piste concrète : l'« Eau distillée » est page 13, et cette page contient DEUX recettes : lignes 1-3 le titre, lignes 4-6 les 3 étapes voulues, puis la « Bière du Roi ». `head -n 6 Livre_de_potions/page_13` garde titre + étapes ; il reste à ne garder que les 3 dernières lignes de ça.",
+   "Une solution possible (il y en a d'autres !) : depuis `~/Montagne/Grotte` : `head -n 6 Livre_de_potions/page_13 | tail -n 3` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `head` alone grabs the top, `tail` alone grabs the bottom… but how do you catch the MIDDLE of a file? By chaining them with a pipe: first cut off the bottom, then the top (or the reverse). The check actually requires the combination of both.",
+   "Concrete lead: 'Distilled water' is on page 13, and that page holds TWO recipes: lines 1-3 the title, lines 4-6 the 3 wanted steps, then the 'King's ale'. `head -n 6 Book_of_potions/page_13` keeps title + steps; you then only keep the last 3 lines of that.",
+   "One possible solution (there are others!): from `~/Mountain/Cave`: `head -n 6 Book_of_potions/page_13 | tail -n 3` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "|",
+ "idiom_review": {
+  "fr": "Bien joué — l'extraction d'une tranche a plusieurs visages. Compare : `head -n 6 fichier | tail -n 3` (couper le bas puis le haut) vs `tail -n 8 fichier | head -n 3` (couper le haut puis le bas) — équivalents ici. Plus tard tu croiseras `sed -n '4,6p' fichier` : une seule commande, mais un nouvel outil à apprendre. `head | tail` reste l'idiome le plus lisible avec ce que tu connais déjà.",
+  "en": "Well done — slicing a middle section has several faces. Compare: `head -n 6 file | tail -n 3` (cut bottom then top) vs `tail -n 8 file | head -n 3` (cut top then bottom) — equivalent here. Later you will meet `sed -n '4,6p' file`: a single command, but a new tool to learn. `head | tail` remains the most readable idiom with what you already know."
+ }
+}

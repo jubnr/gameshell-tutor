@@ -1,0 +1,33 @@
+{
+ "mission": "intermediate/04_bg_xeyes",
+ "intent": "The check requires a bare `xeyes` command among the last 4 history entries AND a background job running xeyes at validation time. Success = run `xeyes` in the foreground, stop it with Ctrl-C, then run `xeyes &` and validate while the window is still open (failed checks kill any xeyes).",
+ "intent_lang": {
+  "fr": "But : lancer `xeyes` au premier plan, l'arrêter avec Ctrl-C, puis le relancer en tâche de fond avec `&` et le laisser tourner.",
+  "en": "Goal: run `xeyes` in the foreground, stop it with Ctrl-C, then start it again in the background with `&` and leave it running."
+ },
+ "concepts": [
+  "processus",
+  "premier plan / arrière-plan",
+  "&",
+  "Ctrl-C",
+  "jobs"
+ ],
+ "danger_note": "Do not close the xeyes window or kill the job before validating: the check needs a running xeyes background job, and a failed check kills every xeyes process.",
+ "hints": {
+  "fr": [
+   "Niveau concept : une commande lancée normalement occupe le terminal (premier plan) : le shell attend qu'elle finisse. Ctrl-C l'interrompt en envoyant le signal INT. Ajouter `&` à la fin la lance en arrière-plan : le programme tourne, mais tu récupères la main tout de suite. Que se passe-t-il quand tu tapes `xeyes` tout court ?",
+   "Piste concrète : la mission demande LES DEUX, dans l'ordre : d'abord `xeyes` seul (les yeux apparaissent, le terminal est bloqué), arrête-le avec Ctrl-C ; ensuite relance-le suivi de `&` et vérifie avec `jobs` qu'il tourne toujours. Ne ferme pas la fenêtre : les yeux doivent encore tourner au moment de la vérification.",
+   "Les commandes : `xeyes` (puis Ctrl-C dans le terminal), puis `xeyes &` en laissant la fenêtre ouverte — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: a command started normally occupies the terminal (foreground): the shell waits for it to finish. Ctrl-C interrupts it by sending the INT signal. Adding `&` at the end starts it in the background: the program runs, but you get the prompt back immediately. What happens when you type plain `xeyes`?",
+   "Concrete lead: the mission requires BOTH, in order: first `xeyes` alone (the eyes appear, the terminal is blocked), stop it with Ctrl-C; then start it again followed by `&` and check with `jobs` that it is still running. Do not close the window: the eyes must still be running at validation time.",
+   "The commands: `xeyes` (then Ctrl-C in the terminal), then `xeyes &` leaving the window open — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "xeyes &",
+ "idiom_review": {
+  "fr": "Version pro : si tu as oublié le `&`, pas besoin de tuer le programme : Ctrl-Z le suspend, puis `bg` le fait repartir en arrière-plan (et `fg` le ramène au premier plan). Compromis : Ctrl-Z + `bg` sauve une commande déjà lancée, mais c'est deux étapes ; penser au `&` dès le départ reste plus simple pour les programmes graphiques.",
+  "en": "Pro version: if you forgot the `&`, no need to kill the program: Ctrl-Z suspends it, then `bg` resumes it in the background (and `fg` brings it back to the foreground). Tradeoff: Ctrl-Z + `bg` rescues an already-running command, but it takes two steps; remembering the `&` upfront stays simpler for graphical programs."
+ }
+}

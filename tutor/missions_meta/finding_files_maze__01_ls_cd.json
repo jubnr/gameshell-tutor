@@ -1,0 +1,32 @@
+{
+ "mission": "finding_files_maze/01_ls_cd",
+ "intent": "A file named OOOOO_copper_coin_OOOOO sits in one leaf of a small 3-level maze of randomly-named directories under ~/Garden/Maze. Success = no *_copper_coin_* file remains anywhere in the maze and the coin (with its exact original content) sits directly in the chest ~/Forest/Hut/Chest.",
+ "intent_lang": {
+  "fr": "But : explorer le petit labyrinthe du jardin avec `cd` et `ls`, trouver la pièce de bronze et la déplacer (`mv`) directement dans ton coffre.",
+  "en": "Goal: explore the small maze in the garden with `cd` and `ls`, find the copper coin and move it (`mv`) straight into your chest."
+ },
+ "concepts": [
+  "cd",
+  "ls",
+  "mv",
+  "arborescence",
+  "chemins"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : les répertoires forment un arbre : `ls` montre le contenu de la pièce où tu es, `cd DOSSIER` t'y fait entrer, `cd ..` te fait revenir en arrière. Comment explorer méthodiquement un labyrinthe sans te perdre ?",
+   "Piste concrète : le labyrinthe est dans `~/Jardin/Labyrinthe` : 3 niveaux de dossiers aux noms aléatoires (2 portes par pièce). Explore avec `ls` puis `cd`, reviens avec `cd ..` quand un couloir est vide. La pièce s'appelle `OOOOO_piece_de_bronze_OOOOO` ; une fois trouvée, déplace-la avec `mv` directement dans `~/Foret/Hutte/Coffre` (pas dans un sous-dossier).",
+   "La commande finale : une fois dans le dossier de la pièce, `mv OOOOO_piece_de_bronze_OOOOO ~/Foret/Hutte/Coffre/` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: directories form a tree: `ls` shows the room you are in, `cd DIR` walks through a door, `cd ..` takes you back. How do you explore a maze methodically without getting lost?",
+   "Concrete lead: the maze is in `~/Garden/Maze`: 3 levels of randomly-named directories (2 doors per room). Explore with `ls` then `cd`, back out with `cd ..` when a corridor is empty. The coin is called `OOOOO_copper_coin_OOOOO`; once found, move it with `mv` straight into `~/Forest/Hut/Chest` (not into a subfolder).",
+   "The final command: once in the coin's directory, `mv OOOOO_copper_coin_OOOOO ~/Forest/Hut/Chest/` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cd ..",
+ "idiom_review": {
+  "fr": "Version pro : pas besoin d'être dans le dossier de la pièce pour la déplacer — `mv ~/Jardin/Labyrinthe/a/b/c/OOOOO_piece_de_bronze_OOOOO ~/Foret/Hutte/Coffre/` marche depuis n'importe où avec des chemins complets ; et bientôt tu verras `find`, qui fouille tout l'arbre en une commande. Compromis : explorer à la main t'apprend la structure ; les chemins complets et `find` sont plus rapides mais plus abstraits.",
+  "en": "Pro version: you do not need to stand in the coin's directory to move it — `mv ~/Garden/Maze/a/b/c/OOOOO_copper_coin_OOOOO ~/Forest/Hut/Chest/` works from anywhere with full paths; and soon you will meet `find`, which sweeps the whole tree in one command. Tradeoff: exploring by hand teaches you the structure; full paths and `find` are faster but more abstract."
+ }
+}

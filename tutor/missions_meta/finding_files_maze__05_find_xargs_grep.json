@@ -1,0 +1,32 @@
+{
+ "mission": "finding_files_maze/05_find_xargs_grep",
+ "intent": "Every leaf of the big maze is a file containing 'stone', except one (random hex name) containing 'diamond'. Success = no file in the maze contains 'diamond' anymore, and the diamond file sits in the chest ~/Forest/Hut/Chest under its ORIGINAL name with identical content — found by piping find into xargs grep.",
+ "intent_lang": {
+  "fr": "But : combiner `find`, `|`, `xargs` et `grep -l` pour repérer LE fichier qui contient « diamant » parmi une foule de cailloux, puis le déplacer dans ton coffre sans le renommer.",
+  "en": "Goal: combine `find`, `|`, `xargs` and `grep -l` to spot THE file containing \"diamond\" among a crowd of stones, then move it into your chest without renaming it."
+ },
+ "concepts": [
+  "find",
+  "xargs",
+  "grep -l",
+  "pipe |",
+  "mv"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : un tuyau `|` branche la sortie d'une commande sur l'entrée de la suivante ; `xargs` transforme ces lignes en arguments ; `grep -l MOT fichiers...` n'affiche que les NOMS des fichiers contenant le mot. Cette fois il y a bien trop de fichiers pour des `cat` à la main : quelle chaîne de commandes fait le tri pour toi ?",
+   "Piste concrète : `find ~/Jardin/Labyrinthe -type f | xargs grep -l diamant` — find liste tous les fichiers, xargs les passe à grep, et grep -l n'affiche que le chemin du diamant (tous les autres contiennent « cailloux »). Il ne reste qu'à `mv` ce chemin vers `~/Foret/Hutte/Coffre`, sans changer le nom du fichier.",
+   "Les commandes : `find ~/Jardin/Labyrinthe -type f | xargs grep -l diamant` puis `mv CHEMIN_AFFICHÉ ~/Foret/Hutte/Coffre/` (ou en une fois : `mv \"$(find ~/Jardin/Labyrinthe -type f | xargs grep -l diamant)\" ~/Foret/Hutte/Coffre/`) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: a `|` pipe plugs one command's output into the next one's input; `xargs` turns those lines into arguments; `grep -l WORD files...` prints only the NAMES of the files containing the word. This time there are far too many files for manual `cat`: which chain of commands does the sorting for you?",
+   "Concrete lead: `find ~/Garden/Maze -type f | xargs grep -l diamond` — find lists every file, xargs hands them to grep, and grep -l prints only the diamond's path (all the others contain \"stone\"). Then just `mv` that path into `~/Forest/Hut/Chest`, without changing the file's name.",
+   "The commands: `find ~/Garden/Maze -type f | xargs grep -l diamond` then `mv PRINTED_PATH ~/Forest/Hut/Chest/` (or in one go: `mv \"$(find ~/Garden/Maze -type f | xargs grep -l diamond)\" ~/Forest/Hut/Chest/`) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "grep diamant",
+ "idiom_review": {
+  "fr": "Version pro : `grep -rl diamant ~/Jardin/Labyrinthe` fait tout le pipeline en une seule commande (`-r` = récursif, `-l` = noms seulement) ; et la forme robuste du pipeline est `find ... -print0 | xargs -0 grep -l ...`, qui survit aux noms contenant espaces ou caractères spéciaux. Compromis : `grep -r` est plus court mais moins composable ; `find | xargs` te laisse ajouter des filtres (-type, -size, -mtime...) à volonté.",
+  "en": "Pro version: `grep -rl diamond ~/Garden/Maze` does the whole pipeline in a single command (`-r` = recursive, `-l` = names only); and the robust form of the pipeline is `find ... -print0 | xargs -0 grep -l ...`, which survives names containing spaces or special characters. Tradeoff: `grep -r` is shorter but less composable; `find | xargs` lets you add filters (-type, -size, -mtime...) at will."
+ }
+}

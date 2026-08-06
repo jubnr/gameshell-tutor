@@ -1,0 +1,26 @@
+{
+ "mission": "basic/10_cp_standard_great_hall",
+ "intent": "The four files standard_1..standard_4 must be copied (same name, same content) into the chest ($GSH_HOME/Forest/Hut/Chest); the great hall's contents must be unchanged and no shield/armour/stag head may end up in the chest.",
+ "intent_lang": {
+  "fr": "But : copier les quatre etendard_1 à etendard_4 de la Grande_salle dans ton Coffre, sans rien changer à la salle ni copier autre chose.",
+  "en": "Goal: copy the four standard_1 to standard_4 from the Great_hall into your Chest, without changing the hall or copying anything else."
+ },
+ "concepts": ["cp", "ls"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cp FICHIER1 ... FICHIERn REPERTOIRE` copie des fichiers vers un répertoire : les originaux restent en place, les copies gardent le même nom et le même contenu. En quoi est-ce différent de `mv` — et pourquoi est-ce exactement ce qu'il faut ici ?",
+   "Piste concrète : dans `~/Chateau/Grande_salle`, `ls` montre `etendard_1` à `etendard_4`, mais aussi une armure, un bouclier décoratif et une tête de cerf qu'il ne faut SURTOUT PAS copier. Destination : `~/Foret/Hutte/Coffre`.",
+   "La commande : depuis `~/Chateau/Grande_salle` : `cp etendard_1 etendard_2 etendard_3 etendard_4 ~/Foret/Hutte/Coffre` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cp FILE1 ... FILEn DIRECTORY` copies files into a directory: the originals stay in place, the copies keep the same name and content. How is that different from `mv` — and why is it exactly what you need here?",
+   "Concrete lead: in `~/Castle/Great_hall`, `ls` shows `standard_1` to `standard_4`, but also a suit of armour, a decorative shield and a stag head that must NOT be copied. Destination: `~/Forest/Hut/Chest`.",
+   "The command: from `~/Castle/Great_hall`: `cp standard_1 standard_2 standard_3 standard_4 ~/Forest/Hut/Chest` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cp etendard_1",
+ "idiom_review": {
+  "fr": "Version pro : `cp etendard_* ~/Foret/Hutte/Coffre` copie les quatre étendards d'un coup avec le joker. Compromis : le motif doit être assez précis pour épargner l'armure et le bouclier — ici `etendard_*` ne matche qu'eux, mais vérifie toujours avec `ls etendard_*` avant.",
+  "en": "Pro version: `cp standard_* ~/Forest/Hut/Chest` copies all four standards at once with the wildcard. Tradeoff: the pattern must be precise enough to spare the armour and the shield — here `standard_*` matches only them, but always check with `ls standard_*` first."
+ }
+}

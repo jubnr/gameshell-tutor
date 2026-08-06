@@ -1,0 +1,37 @@
+{
+ "updated": 1783515332,
+ "concepts": {
+  "ls": {
+   "status": "used",
+   "uses": 1,
+   "errors": 0,
+   "last_error": null
+  },
+  "cat": {
+   "status": "seen",
+   "uses": 0,
+   "errors": 2,
+   "last_error": "no_such_file"
+  }
+ },
+ "error_patterns": [
+  [
+   "no_such_file",
+   "cat"
+  ],
+  [
+   "no_such_file",
+   "cat"
+  ]
+ ],
+ "missions": {
+  "1": {
+   "hint_level": 3,
+   "failed_attempts": 4
+  }
+ },
+ "predictions": {
+  "asked": 0,
+  "close": 0
+ }
+}

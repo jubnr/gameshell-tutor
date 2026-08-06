@@ -1,0 +1,27 @@
+{
+ "mission": "pipe_intro_book_of_potions/03_cat",
+ "intent": "Be in the cave with Servillus, leave the potion book untouched, and have your last command (containing 'cat') print exactly the concatenation of Book_of_potions/page_01 and page_02 — the whole transformation potion recipe, title included.",
+ "intent_lang": {
+  "fr": "But : depuis la grotte, afficher la recette complète de la « Potion de transformation » (titre compris), qui s'étale sur les pages 1 et 2, avec un seul `cat`, sans modifier le livre.",
+  "en": "Goal: from the cave, display the complete 'Transformation potion' recipe (title included), which spans pages 1 and 2, with a single `cat`, without altering the book."
+ },
+ "concepts": ["cat", "cat multiple files", "concatenation"],
+ "danger_note": "The check diffs the book of potions against a pristine copy: any `>` redirection into Book_of_potions/ (or any edit) fails the mission.",
+ "hints": {
+  "fr": [
+   "Niveau concept : `cat` vient de « concatenate » : `cat FICHIER1 FICHIER2` affiche les fichiers BOUT À BOUT, dans l'ordre donné. Or cette recette ne tient pas sur une seule page… Sur combien de pages s'étale-t-elle d'après la table des matières ?",
+   "Piste concrète : `cat Livre_de_potions/table_des_matieres` : la « Potion de transformation » occupe les pages 1-2 (étapes 1 à 9 sur `page_01`, étapes 10 à 19 sur `page_02`). Il faut donc donner les DEUX pages à `cat`, dans le bon ordre, en restant dans `~/Montagne/Grotte`.",
+   "La commande : depuis `~/Montagne/Grotte` : `cat Livre_de_potions/page_01 Livre_de_potions/page_02` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cat` comes from 'concatenate': `cat FILE1 FILE2` prints the files END TO END, in the given order. But this recipe does not fit on one page… How many pages does it span according to the table of contents?",
+   "Concrete lead: `cat Book_of_potions/table_of_contents`: the 'Transformation potion' covers pages 1-2 (steps 1 to 9 on `page_01`, steps 10 to 19 on `page_02`). So give BOTH pages to `cat`, in the right order, while staying in `~/Mountain/Cave`.",
+   "The command: from `~/Mountain/Cave`: `cat Book_of_potions/page_01 Book_of_potions/page_02` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cat ",
+ "idiom_review": {
+  "fr": "Version pro : un motif fait le même travail en plus court — `cat Livre_de_potions/page_0[12]` ou `page_0{1,2}` : le shell déplie le motif en liste triée, donc l'ordre des pages est respecté. Compromis : la forme explicite `page_01 page_02` est plus lisible ; le joker devient rentable dès que les fichiers sont nombreux.",
+  "en": "Pro version: a pattern does the same job in fewer keystrokes — `cat Book_of_potions/page_0[12]` or `page_0{1,2}`: the shell expands the pattern into a sorted list, so page order is preserved. Tradeoff: the explicit form `page_01 page_02` is more readable; the glob pays off once files get numerous."
+ }
+}

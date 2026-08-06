@@ -1,0 +1,26 @@
+{
+  "mission": "stdin_stdout_stderr/03_stdout_redirection_inventory",
+  "intent": "Produce a file inventory.txt inside the Drawer of Merlin's office containing exactly the list of grimoire files (one per line, nothing else). Success = the engine's check compares the sorted file against its own reference list.",
+  "intent_lang": {
+    "fr": "But : créer dans le Tiroir un fichier inventaire.txt contenant exactement la liste des grimoires — en redirigeant la sortie d'une commande.",
+    "en": "Goal: create inventory.txt in the Drawer containing exactly the list of grimoires — by redirecting a command's output."
+  },
+  "concepts": [">", ">>", "ls", "redirection"],
+  "hints": {
+    "fr": [
+      "Niveau concept : `commande > fichier` envoie la sortie dans le fichier en L'ÉCRASANT ; `commande >> fichier` AJOUTE à la fin. Si ton fichier contient deux fois la liste, lequel des deux as-tu utilisé ?",
+      "Piste concrète : depuis le bureau de Merlin, liste les grimoires avec `ls` (et seulement eux), puis redirige cette sortie vers le fichier demandé dans le Tiroir. Vérifie le contenu avec `less` ou `cat`.",
+      "La commande : depuis le bureau : `ls grimoire* > Tiroir/inventaire.txt` (adapte au nom réel des fichiers que `ls` te montre) — je validerai aussitôt."
+    ],
+    "en": [
+      "Concept: `command > file` sends output to the file OVERWRITING it; `command >> file` APPENDS. If your file contains the list twice, which one did you use?",
+      "Concrete lead: from Merlin's office, list only the grimoires with `ls`, then redirect that output into the requested file in the Drawer. Verify with `less` or `cat`.",
+      "The command: from the office: `ls grimoire* > Drawer/inventory.txt` (adapt to the real names `ls` shows you) — I will validate right away."
+    ]
+  },
+  "idiom_trigger": ">>",
+  "idiom_review": {
+    "fr": "Note la différence `>` (écrase) vs `>>` (ajoute) : l'erreur classique est d'accumuler des doublons avec `>>`, ou de perdre un contenu avec `>`. Astuce pro : `cat fichier` juste après la redirection pour vérifier le résultat réel.",
+    "en": "Note `>` (overwrite) vs `>>` (append): the classic mistake is accumulating duplicates with `>>`, or losing content with `>`. Pro tip: `cat file` right after redirecting to verify the real result."
+  }
+}

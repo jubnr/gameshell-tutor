@@ -1,0 +1,31 @@
+{
+ "mission": "finding_files_maze/04_find_2",
+ "intent": "Six files with random numeric names sit in random leaves of the maze: five contain the word 'stone' and one contains 'ruby'. Success = no file in the maze contains 'ruby' anymore, and the ruby file sits in the chest ~/Forest/Hut/Chest under its ORIGINAL name with identical content.",
+ "intent_lang": {
+  "fr": "But : lister tous les fichiers du labyrinthe avec `find -type f`, lire leur contenu pour démasquer le rubis (les autres sont des cailloux), et le déplacer dans ton coffre sans le renommer.",
+  "en": "Goal: list every file in the maze with `find -type f`, read their contents to unmask the ruby (the others are stones), and move it into your chest without renaming it."
+ },
+ "concepts": [
+  "find",
+  "-type f",
+  "cat",
+  "mv"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : quand le NOM ne dit rien (ici, des numéros aléatoires), on filtre par NATURE : `find -type f` ne liste que les fichiers (pas les dossiers), puis on inspecte leur CONTENU. Combien de fichiers y a-t-il en tout dans le labyrinthe ?",
+   "Piste concrète : `find ~/Jardin/Labyrinthe -type f` affiche 6 chemins. Fais `cat` sur chacun : cinq contiennent le mot « cailloux », un seul contient « rubis » — c'est lui. Déplace-le dans `~/Foret/Hutte/Coffre` en GARDANT son nom numérique (le contrôle vérifie le nom d'origine et le contenu exact).",
+   "Les commandes : `find ~/Jardin/Labyrinthe -type f` puis `cat` sur chaque chemin ; quand tu tiens celui qui contient « rubis » : `mv CHEMIN_DU_FICHIER ~/Foret/Hutte/Coffre/` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: when the NAME tells you nothing (random numbers here), filter by NATURE: `find -type f` lists only files (not directories), then you inspect their CONTENT. How many files are there in the whole maze?",
+   "Concrete lead: `find ~/Garden/Maze -type f` prints 6 paths. `cat` each one: five contain the word \"stone\", only one contains \"ruby\" — that is the gem. Move it into `~/Forest/Hut/Chest` KEEPING its numeric name (the check verifies the original name and the exact content).",
+   "The commands: `find ~/Garden/Maze -type f` then `cat` each path; once you hold the one containing \"ruby\": `mv PATH_TO_FILE ~/Forest/Hut/Chest/` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cat ",
+ "idiom_review": {
+  "fr": "Version pro : au lieu de six `cat` à la main, `grep -l rubis` sait dire QUELS fichiers contiennent une chaîne — combiné à `find` par un tuyau `|` et `xargs`, c'est exactement la prochaine mission. Compromis : `cat` manuel marche très bien pour 6 fichiers et te fait voir les contenus ; à 600 fichiers, seul le pipeline tient la route.",
+  "en": "Pro version: instead of six manual `cat`, `grep -l ruby` can tell WHICH files contain a string — combined with `find` through a `|` pipe and `xargs`, that is exactly the next mission. Tradeoff: manual `cat` works fine for 6 files and shows you the contents; at 600 files, only the pipeline scales."
+ }
+}

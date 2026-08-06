@@ -1,0 +1,26 @@
+{
+ "mission": "basic/06_mv_coins_garden",
+ "intent": "The three coins coin_1, coin_2, coin_3 must no longer be in $GSH_HOME/Garden and must sit in the chest ($GSH_HOME/Forest/Hut/Chest) with their content intact (moved, not recreated).",
+ "intent_lang": {
+  "fr": "But : déplacer les trois pièces du Jardin vers ton Coffre (Foret/Hutte/Coffre) sans les abîmer.",
+  "en": "Goal: move the three coins from the Garden to your Chest (Forest/Hut/Chest) without damaging them."
+ },
+ "concepts": ["mv", "cd", "~"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `mv FICHIER1 ... FICHIERn REPERTOIRE` déplace des fichiers : le DERNIER argument est la destination, tout ce qui précède est déplacé. Les pièces doivent garder leur contenu — il faut donc les déplacer, pas les recréer. Peux-tu déplacer les trois d'un seul coup ?",
+   "Piste concrète : va dans `~/Jardin`, `ls` te montre `piece_1`, `piece_2` et `piece_3`. La destination est `~/Foret/Hutte/Coffre` — le `~` te permet de la désigner sans bouger du jardin.",
+   "La commande : depuis `~/Jardin` : `mv piece_1 piece_2 piece_3 ~/Foret/Hutte/Coffre` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `mv FILE1 ... FILEn DIRECTORY` moves files: the LAST argument is the destination, everything before it gets moved. The coins must keep their content — so move them, don't recreate them. Can you move all three in one go?",
+   "Concrete lead: go to `~/Garden`, `ls` shows you `coin_1`, `coin_2` and `coin_3`. The destination is `~/Forest/Hut/Chest` — the `~` lets you name it without leaving the garden.",
+   "The command: from `~/Garden`: `mv coin_1 coin_2 coin_3 ~/Forest/Hut/Chest` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "mv piece_1",
+ "idiom_review": {
+  "fr": "Version pro : `mv piece_* ~/Foret/Hutte/Coffre` déplace toutes les pièces d'un coup grâce au joker `*` (tu le découvriras bientôt). Compromis : un motif attrape TOUT ce qui correspond — vérifie toujours avec `ls piece_*` avant de déplacer.",
+  "en": "Pro version: `mv coin_* ~/Forest/Hut/Chest` moves all the coins at once thanks to the `*` wildcard (you will discover it soon). Tradeoff: a pattern grabs EVERYTHING that matches — always check with `ls coin_*` before moving."
+ }
+}

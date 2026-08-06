@@ -1,0 +1,31 @@
+{
+ "mission": "finding_files_maze/02_tree",
+ "intent": "A file named OOOOO_silver_coin_OOOOO sits in one leaf of a 3-level maze (3 doors per room) under ~/Garden/Maze. Success = no *silver_coin* file remains in the maze and the coin, with its exact original content, sits directly in the chest ~/Forest/Hut/Chest — this time using the shell (ls -R or tree) rather than wandering room by room.",
+ "intent_lang": {
+  "fr": "But : repérer d'un coup d'œil la pièce d'argent dans le labyrinthe grâce à `tree` ou `ls -R`, puis la déplacer dans ton coffre.",
+  "en": "Goal: spot the silver coin in the maze at a glance with `tree` or `ls -R`, then move it into your chest."
+ },
+ "concepts": [
+  "tree",
+  "ls -R",
+  "mv",
+  "arborescence récursive"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : plutôt que de visiter chaque pièce, on peut afficher TOUT l'arbre d'un coup : `ls -R` liste récursivement, et `tree` dessine l'arborescence. Ce labyrinthe a 27 recoins : lequel contient la pièce ?",
+   "Piste concrète : place-toi dans `~/Jardin/Labyrinthe` et lance `tree` (ou `ls -R` si tree n'est pas installé) : tu verras `OOOOO_piece_d_argent_OOOOO` et la suite de dossiers aléatoires qui y mène. Reconstitue le chemin en lisant l'arbre de haut en bas, puis `mv` la pièce directement dans `~/Foret/Hutte/Coffre` (la complétion Tab t'évitera de taper les noms aléatoires).",
+   "La commande : depuis `~/Jardin/Labyrinthe`, `tree` pour lire le chemin, puis `mv DOSSIER1/DOSSIER2/DOSSIER3/OOOOO_piece_d_argent_OOOOO ~/Foret/Hutte/Coffre/` (remplace par les vrais noms lus dans l'arbre) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: instead of visiting every room, you can print the WHOLE tree at once: `ls -R` lists recursively, and `tree` draws the hierarchy. This maze has 27 corners: which one holds the coin?",
+   "Concrete lead: go to `~/Garden/Maze` and run `tree` (or `ls -R` if tree is not installed): you will see `OOOOO_silver_coin_OOOOO` and the chain of random directories leading to it. Rebuild the path by reading the tree top-down, then `mv` the coin straight into `~/Forest/Hut/Chest` (Tab completion saves you from typing the random names).",
+   "The command: from `~/Garden/Maze`, `tree` to read the path, then `mv DIR1/DIR2/DIR3/OOOOO_silver_coin_OOOOO ~/Forest/Hut/Chest/` (substitute the real names read in the tree) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cd ",
+ "idiom_review": {
+  "fr": "Version pro : `find ~/Jardin/Labyrinthe -name '*piece_d_argent*'` imprimerait directement le chemin complet, prêt à copier dans un `mv` — c'est l'objet des prochaines missions. Compromis : `tree` donne une vue d'ensemble lisible par un humain (idéal pour comprendre une structure), `find` donne une réponse exploitable par une commande ; sur un très gros arbre, `tree` devient illisible.",
+  "en": "Pro version: `find ~/Garden/Maze -name '*silver_coin*'` would print the full path directly, ready to paste into a `mv` — that is what the next missions are about. Tradeoff: `tree` gives a human-readable overview (great for understanding a structure), `find` gives a machine-usable answer; on a very large tree, `tree` becomes unreadable."
+ }
+}

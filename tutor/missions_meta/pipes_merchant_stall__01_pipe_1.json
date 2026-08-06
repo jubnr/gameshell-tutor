@@ -1,0 +1,27 @@
+{
+  "mission": "pipes_merchant_stall/01_pipe_1",
+  "intent": "Find how much the King still owes, reading the merchant's scroll, using at most 3 command lines. The engine's check asks for the amount interactively and also verifies the command count. Any pipeline that isolates the King's UNPAID transactions is valid.",
+  "intent_lang": {
+    "fr": "But : trouver la dette restante du roi à partir du parchemin de l'échoppe, en 3 lignes de commande maximum. Toute combinaison de commandes qui isole les transactions NON PAYÉES du roi est valable.",
+    "en": "Goal: find the King's remaining debt from the merchant's scroll, in at most 3 command lines. Any pipeline that isolates the King's UNPAID transactions is valid."
+  },
+  "concepts": ["|", "grep", "grep -v", "ls", "find"],
+  "open_solution": true,
+  "hints": {
+    "fr": [
+      "Niveau concept : le pipe `|` branche la sortie d'une commande sur l'entrée de la suivante — `commande1 | commande2` ne compte que pour UNE ligne. Et `grep -v MOTIF` garde les lignes qui NE contiennent PAS le motif.",
+      "Piste concrète : le vrai parchemin est noyé parmi des objets sans intérêt — trouve-le d'abord (`ls | grep ...`). Ensuite, filtre ses lignes : celles du roi, puis retire celles marquées PAYÉ.",
+      "Une solution possible (il y en a d'autres !) : `grep roi NOM_DU_PARCHEMIN | grep -v PAYÉ` puis additionne les montants affichés. Vérifie le nom réel du parchemin avec `ls` avant. Quand tu veux répondre au marchand, dis-moi `gm fini`."
+    ],
+    "en": [
+      "Concept: the pipe `|` plugs one command's output into the next's input — `cmd1 | cmd2` counts as ONE line. And `grep -v PATTERN` keeps the lines that do NOT contain the pattern.",
+      "Concrete lead: the real scroll is buried among boring objects — find it first (`ls | grep ...`). Then filter its lines: the King's, minus the ones marked PAID.",
+      "One possible solution (there are others!): `grep King SCROLL_NAME | grep -v PAID` then add up the displayed amounts. Check the scroll's real name with `ls` first. When you are ready to answer the merchant, tell me `gm fini`."
+    ]
+  },
+  "idiom_trigger": "grep",
+  "idiom_review": {
+    "fr": "Bien joué — le check accepte n'importe quel chemin correct. Compare les variantes : `ls | grep motif` (simple, répertoire plat) vs `find . -name '*motif*'` (récursif, plus général) ; `grep roi | grep -v PAYÉ` (lisible) vs un seul `grep -E` (compact mais moins clair). L'idiomatique, c'est le plus lisible qui suffit.",
+    "en": "Well done — the check accepts any correct path. Compare variants: `ls | grep pattern` (simple, flat dir) vs `find . -name '*pattern*'` (recursive, more general); `grep king | grep -v PAID` (readable) vs a single `grep -E` (compact but less clear). Idiomatic = the most readable one that suffices."
+  }
+}

@@ -1,0 +1,32 @@
+{
+ "mission": "permissions/02_chmod_r_file_king_quarter",
+ "intent": "In Kings_quarter, the hidden file .secret_note holds the safe combination but had its read permission removed; a visible decoy file 'note' contains 0123456789. Success = restore read permission, read the hidden note, and answer the interactive check's question with the exact combination.",
+ "intent_lang": {
+  "fr": "But : rendre lisible le papier secret caché dans la chambre du roi (`chmod u+r`), lire la combinaison du coffre-fort et me la donner quand je te la demanderai — le papier visible est un leurre.",
+  "en": "Goal: make the hidden secret note in the King's quarter readable (`chmod u+r`), read the safe combination and give it to me when I ask — the visible note is a decoy."
+ },
+ "concepts": [
+  "chmod",
+  "droit r sur un fichier",
+  "fichiers cachés",
+  "ls -lA",
+  "cat"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : sur un FICHIER, le droit `r` permet de le lire : sans lui, `cat` répond « Permission non accordée ». Et un fichier dont le nom commence par `.` est caché : `ls` ne le montre pas, il faut `ls -A` (ou `-a`). Le roi a caché ET verrouillé son papier — dans quel ordre vas-tu déjouer les deux protections ?",
+   "Piste concrète : dans `~/Chateau/Batiment_principal/Salle_du_trone/Chambre_du_roi`, fais `ls -lA` : tu verras `bout_de_papier` (lisible… mais c'est un leurre : 0123456789) et `.bout_de_papier_secret`, sans droit de lecture. Rends-le lisible avec `chmod u+r`, puis `cat` pour découvrir la vraie combinaison.",
+   "Les commandes : `chmod u+r .bout_de_papier_secret` puis `cat .bout_de_papier_secret` — retiens le nombre affiché (je te demanderai la combinaison) — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: on a FILE, the `r` permission lets you read it: without it, `cat` answers \"Permission denied\". And a file whose name starts with `.` is hidden: plain `ls` does not show it, you need `ls -A` (or `-a`). The King both hid AND locked his note — in which order will you defeat the two protections?",
+   "Concrete lead: in `~/Castle/Main_building/Throne_room/Kings_quarter`, run `ls -lA`: you will see `note` (readable… but it is a decoy: 0123456789) and `.secret_note`, with no read permission. Make it readable with `chmod u+r`, then `cat` it to discover the real combination.",
+   "The commands: `chmod u+r .secret_note` then `cat .secret_note` — remember the number shown (I will ask you for the combination) — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "cat bout_de_papier",
+ "idiom_review": {
+  "fr": "Version pro : le fichier visible `bout_de_papier` est un leurre classique — un vrai enquêteur commence par `ls -lA` pour voir TOUS les fichiers (cachés compris) AVEC leurs droits, avant de lire quoi que ce soit. Compromis : `-A` allonge la liste, mais oublier les fichiers cachés fait rater l'essentiel ; note aussi que pas besoin de sudo ici — tu es propriétaire du fichier, donc `chmod` t'obéit.",
+  "en": "Pro version: the visible `note` file is a classic decoy — a real investigator starts with `ls -lA` to see ALL files (hidden included) WITH their permissions, before reading anything. Tradeoff: `-A` makes the listing longer, but forgetting hidden files means missing the point; also note no sudo is needed here — you own the file, so `chmod` obeys you."
+ }
+}

@@ -1,0 +1,27 @@
+{
+  "mission": "basic/05_rm_spiders_cellar",
+  "intent": "Delete every spider file in the castle cellar while leaving the two bat files untouched. Success = the engine's check finds no spider_* file and still exactly 2 bat files.",
+  "intent_lang": {
+    "fr": "But : supprimer toutes les araignées de la cave SANS toucher aux chauves-souris.",
+    "en": "Goal: remove every spider from the cellar WITHOUT touching the bats."
+  },
+  "concepts": ["rm", "ls", "cd"],
+  "danger_note": "rm is irreversible; the check fails if a bat is deleted.",
+  "hints": {
+    "fr": [
+      "Niveau concept : `rm` supprime définitivement les fichiers qu'on lui donne en argument — il n'y a pas de corbeille. Comment vérifier D'ABORD ce qui se trouve dans la cave ?",
+      "Piste concrète : place-toi dans `~/Chateau/Cave`, fais `ls` pour voir les fichiers `araignee_*` et `chauve-souris_*`, puis donne à `rm` uniquement les araignées.",
+      "La commande : depuis `~/Chateau/Cave` : `rm araignee_1 araignee_2 araignee_3` (vérifie les noms exacts avec `ls` d'abord) — je validerai aussitôt."
+    ],
+    "en": [
+      "Concept: `rm` permanently deletes the files given as arguments — there is no trash bin. How can you check FIRST what is in the cellar?",
+      "Concrete lead: go to the cellar, `ls` to see the `spider_*` and `bat_*` files, then give `rm` only the spiders.",
+      "The command: from the cellar: `rm spider_1 spider_2 spider_3` (verify exact names with `ls` first) — I will validate right away."
+    ]
+  },
+  "idiom_trigger": "rm ",
+  "idiom_review": {
+    "fr": "Version pro : au lieu de nommer chaque fichier, un motif `rm araignee_*` supprime toutes les araignées d'un coup (tu le verras bientôt). Compromis : les jokers sont puissants mais dangereux avec `rm` — toujours tester le motif avec `ls motif` avant.",
+    "en": "Pro version: instead of naming each file, a glob `rm spider_*` removes them all at once. Tradeoff: globs are powerful but dangerous with `rm` — always test the pattern with `ls pattern` first."
+  }
+}

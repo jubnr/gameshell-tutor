@@ -1,0 +1,26 @@
+{
+ "mission": "basic/01_cd_tower",
+ "intent": "Be standing in $GSH_HOME/Castle/Main_tower/First_floor/Second_floor/Top_of_the_tower when the check runs (it compares the resolved PWD to that path; on failure it teleports you back to the start).",
+ "intent_lang": {
+  "fr": "But : te trouver tout en haut du donjon (Chateau/Donjon/Premier_etage/Deuxieme_etage/Haut_du_donjon).",
+  "en": "Goal: be standing at the top of the tower (Castle/Main_tower/First_floor/Second_floor/Top_of_the_tower)."
+ },
+ "concepts": ["cd", "ls", "pwd"],
+ "hints": {
+  "fr": [
+   "Niveau concept : dans le shell, chaque lieu est un répertoire. `cd LIEU` t'y déplace, `ls` liste les lieux accessibles, `pwd` te dit où tu es. Comment découvrir les lieux accessibles depuis ta position actuelle ?",
+   "Piste concrète : depuis le point de départ, l'itinéraire est `Chateau`, puis `Donjon`, puis `Premier_etage`, `Deuxieme_etage` et enfin `Haut_du_donjon`. À chaque étape, `ls` te montre la suite (attention aux majuscules !).",
+   "La commande : depuis n'importe où : `cd ~/Chateau/Donjon/Premier_etage/Deuxieme_etage/Haut_du_donjon` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: in the shell, every location is a directory. `cd PLACE` moves you there, `ls` lists reachable places, `pwd` tells you where you are. How can you discover which places are reachable from your current position?",
+   "Concrete lead: from the start, the route is `Castle`, then `Main_tower`, `First_floor`, `Second_floor` and finally `Top_of_the_tower`. At each step `ls` shows what comes next (mind the capital letters!).",
+   "The command: from anywhere: `cd ~/Castle/Main_tower/First_floor/Second_floor/Top_of_the_tower` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cd Chateau",
+ "idiom_review": {
+  "fr": "Version pro : au lieu d'enchaîner cinq `cd`, un seul chemin fait tout : `cd Chateau/Donjon/Premier_etage/Deuxieme_etage/Haut_du_donjon`. Compromis : le chemin est long à taper, mais la touche Tab le complète morceau par morceau — et une seule commande suffit.",
+  "en": "Pro version: instead of chaining five `cd` commands, a single path does it all: `cd Castle/Main_tower/First_floor/Second_floor/Top_of_the_tower`. Tradeoff: the path is long to type, but the Tab key completes it piece by piece — and one command is enough."
+ }
+}

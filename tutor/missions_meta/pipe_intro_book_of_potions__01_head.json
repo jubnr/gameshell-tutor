@@ -1,0 +1,27 @@
+{
+ "mission": "pipe_intro_book_of_potions/01_head",
+ "intent": "Be in the cave with Servillus, leave the potion book untouched, and have your last command (containing 'head') print exactly the first 6 lines of Book_of_potions/page_07 — the herbal tea recipe with its title and nothing else.",
+ "intent_lang": {
+  "fr": "But : depuis la grotte de Servillus, afficher la recette de la « Tisane aux herbes » (titre compris) et rien d'autre, avec `head`, sans modifier le livre de potions.",
+  "en": "Goal: from Servillus's cave, display the 'Herbal tea' recipe (title included) and nothing else, using `head`, without altering the book of potions."
+ },
+ "concepts": ["head", "head -n", "cat", "cd"],
+ "danger_note": "The check diffs the book of potions against a pristine copy: any `>` redirection into Book_of_potions/ (or any edit) fails the mission.",
+ "hints": {
+  "fr": [
+   "Niveau concept : `head -n K FICHIER` affiche les K premières lignes d'un fichier — parfait quand ce qu'on cherche est au DÉBUT d'une page. Mais sur quelle page du livre se trouve la tisane ? Un livre bien rangé a une table des matières…",
+   "Piste concrète : va dans la grotte (`cd ~/Montagne/Grotte`) et reste-s'y (la validation exige que tu sois DANS la grotte, pas dans le livre). `cat Livre_de_potions/table_des_matieres` t'apprend que la « Tisane aux herbes » est page 7. Son titre décoré (3 lignes) + ses 3 étapes = les 6 premières lignes de la page.",
+   "La commande : depuis `~/Montagne/Grotte` : `head -n 6 Livre_de_potions/page_07` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `head -n K FILE` prints the first K lines of a file — perfect when what you need is at the TOP of a page. But which page holds the herbal tea? A well-kept book has a table of contents…",
+   "Concrete lead: go to the cave (`cd ~/Mountain/Cave`) and stay there (the check requires you to be IN the cave, not inside the book). `cat Book_of_potions/table_of_contents` shows 'Herbal tea' is on page 7. Its decorated title (3 lines) + its 3 steps = the first 6 lines of the page.",
+   "The command: from `~/Mountain/Cave`: `head -n 6 Book_of_potions/page_07` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "head",
+ "idiom_review": {
+  "fr": "Version pro : `cat Livre_de_potions/page_07` aurait tout affiché, y compris la potion d'invisibilité qui suit — `head -n 6` découpe exactement ce qu'il faut. Raccourci courant : `head -6` équivaut à `head -n 6` (mais `-n` est la forme portable). Réflexe utile : d'abord `cat` pour voir la page, puis `head -n K` pour cadrer.",
+  "en": "Pro version: `cat Book_of_potions/page_07` would have shown everything, including the invisibility draft below — `head -n 6` cuts exactly what is needed. Common shortcut: `head -6` equals `head -n 6` (but `-n` is the portable form). Useful reflex: `cat` first to see the page, then `head -n K` to frame it."
+ }
+}

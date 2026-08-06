@@ -1,0 +1,34 @@
+{
+ "mission": "intermediate/03_tab_spider_lair",
+ "intent": "Inside the cellar there is a hidden directory `.Lair_of_the_spider_queen <random> <random>` (name contains spaces) holding two randomly-named files, one containing `spider_queen` and one containing `baby_bat`. Success = your current directory IS that lair, the spider_queen file is deleted, the baby_bat file is untouched, and less than 20 seconds elapsed since the mission timer started. Shell globs (* ?) are disabled.",
+ "intent_lang": {
+  "fr": "But : entrer dans la tanière cachée au fond de la cave et supprimer la reine araignée (pas le bébé chauve-souris), en moins de 20 secondes et sans jokers — la touche Tab est ta baguette magique.",
+  "en": "Goal: enter the hidden lair at the back of the cellar and delete the spider queen (not the baby bat), in under 20 seconds and without wildcards — the Tab key is your magic wand."
+ },
+ "concepts": [
+  "complétion Tab",
+  "cd",
+  "rm",
+  "ls -A",
+  "fichiers cachés",
+  "noms avec espaces"
+ ],
+ "danger_note": "rm is irreversible and the check fails if the baby_bat file is deleted; only 20 seconds are allowed and globs are disabled.",
+ "hints": {
+  "fr": [
+   "Niveau concept : la touche Tab complète un nom de fichier commencé — même long, plein d'espaces ou de caractères aléatoires — et Tab-Tab liste les complétions possibles. Les jokers `*`/`?` sont désactivés ici et le chrono ne dure que 20 secondes : comment taper des noms imprononçables sans les recopier ?",
+   "Piste concrète : le repaire est un répertoire caché de la cave dont le nom commence par `.Taniere_de_la_reine_araignee` suivi d'espaces et de lettres aléatoires (`ls -A` dans `~/Chateau/Cave` pour le voir). Dedans, deux fichiers aux noms aléatoires : l'un contient `reine_araignee` (à supprimer), l'autre `bebe_chauve_souris` (à garder !). Tab-Tab pour les lister, puis tape les premières lettres du bon et Tab. Le chrono démarre au lancement de la mission : si les 20 s sont passées, remets-le à zéro comme l'indique l'énoncé, puis enchaîne vite.",
+   "La séquence : dans `~/Chateau/Cave`, tape `cd .Ta` puis Tab (la complétion échappe les espaces pour toi), Entrée ; puis `rm ` + les premières lettres du fichier dont le nom contient `reine_araignee` + Tab, Entrée — reste dans la tanière et fais tout en moins de 20 s — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: the Tab key completes a filename you started typing — even long, space-riddled or random ones — and Tab-Tab lists the possible completions. Wildcards `*`/`?` are disabled here and the timer only allows 20 seconds: how do you type unpronounceable names without copying them by hand?",
+   "Concrete lead: the lair is a hidden directory of the cellar whose name starts with `.Lair_of_the_spider_queen` followed by spaces and random letters (`ls -A` in the cellar to see it). Inside, two randomly-named files: one contains `spider_queen` (delete it), the other `baby_bat` (keep it!). Tab-Tab to list them, then type the first letters of the right one and Tab. The timer starts when the mission starts: if the 20 s are gone, reset it as the mission statement explains, then move fast.",
+   "The sequence: in the cellar, type `cd .La` then Tab (completion escapes the spaces for you), Enter; then `rm ` + the first letters of the file whose name contains `spider_queen` + Tab, Enter — stay inside the lair and do it all in under 20 s — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "rm ",
+ "idiom_review": {
+  "fr": "Version pro : hors de cette mission, `rm *reine*` (un joker) supprimerait la reine sans taper son nom — mais ici les motifs sont désactivés, exprès pour t'apprendre Tab. Compromis : les jokers sont rapides mais aveugles (toujours tester avec `ls motif` avant un `rm`), alors que la complétion Tab te montre exactement ce qu'elle va écrire — zéro faute de frappe, et elle échappe même les espaces.",
+  "en": "Pro version: outside this mission, `rm *queen*` (a glob) would delete the queen without typing her name — but patterns are disabled here, precisely to teach you Tab. Tradeoff: globs are fast but blind (always test with `ls pattern` before a `rm`), while Tab completion shows you exactly what it will type — zero typos, and it even escapes the spaces."
+ }
+}

@@ -1,0 +1,26 @@
+{
+ "mission": "basic/11_cp_wildcards_tapestries_great_hall",
+ "intent": "All ten tapestry files (random-prefixed names <number>_tapestry_01..10) must be copied into the chest with identical names; the great hall's contents must be unchanged and no shield/armour/stag head may end up in the chest.",
+ "intent_lang": {
+  "fr": "But : copier les dix tapisseries de la Grande_salle dans ton Coffre grâce à un joker, sans copier les autres trésors.",
+  "en": "Goal: copy the ten tapestries from the Great_hall into your Chest using a wildcard, without copying the other treasures."
+ },
+ "concepts": ["cp", "jokers * et ?", "ls"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cp` accepte plusieurs fichiers, et un joker `*` peut dresser cette liste à ta place : `*mot*` désigne tous les fichiers dont le nom contient `mot`. Quel morceau de nom est commun à toutes les tapisseries — et seulement à elles ?",
+   "Piste concrète : dans `~/Chateau/Grande_salle`, dix fichiers `<nombre>_tapisserie_01` à `_10` (nombres aléatoires) côtoient une armure, un bouclier décoratif et une tête de cerf à laisser tranquilles. Teste `ls *tapisserie*` : tu dois voir exactement dix noms.",
+   "La commande : depuis `~/Chateau/Grande_salle` : `ls *tapisserie*` pour vérifier, puis `cp *tapisserie* ~/Foret/Hutte/Coffre` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cp` accepts several files, and a `*` wildcard can build that list for you: `*word*` denotes every file whose name contains `word`. Which piece of name is common to all the tapestries — and only to them?",
+   "Concrete lead: in `~/Castle/Great_hall`, ten files `<number>_tapestry_01` to `_10` (random numbers) sit next to a suit of armour, a decorative shield and a stag head that must be left alone. Test `ls *tapestry*`: you should see exactly ten names.",
+   "The command: from `~/Castle/Great_hall`: `ls *tapestry*` to check, then `cp *tapestry* ~/Forest/Hut/Chest` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "tapisserie_0",
+ "idiom_review": {
+  "fr": "Version pro : le joker `*tapisserie*` remplace la saisie fastidieuse des dix noms à préfixe aléatoire — impossible à taper sans erreur. Compromis : un motif large peut attraper des intrus ; l'habitude `ls motif` puis `cp motif destination` te protège.",
+  "en": "Pro version: the `*tapestry*` wildcard replaces the tedious typing of ten random-prefixed names — nearly impossible to get right by hand. Tradeoff: a broad pattern can catch intruders; the habit of `ls pattern` then `cp pattern destination` protects you."
+ }
+}

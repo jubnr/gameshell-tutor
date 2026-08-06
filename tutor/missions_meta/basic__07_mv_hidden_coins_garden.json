@@ -1,0 +1,26 @@
+{
+ "mission": "basic/07_mv_hidden_coins_garden",
+ "intent": "The three hidden coins (dot-files named .<number>_coin_1/2/3) must no longer be in $GSH_HOME/Garden and exactly one of each must sit in the chest ($GSH_HOME/Forest/Hut/Chest) with intact content.",
+ "intent_lang": {
+  "fr": "But : retrouver les trois pièces CACHÉES du Jardin et les déplacer dans ton Coffre (Foret/Hutte/Coffre).",
+  "en": "Goal: find the three HIDDEN coins in the Garden and move them into your Chest (Forest/Hut/Chest)."
+ },
+ "concepts": ["ls -A", "mv", "fichiers cachés", "Tab"],
+ "hints": {
+  "fr": [
+   "Niveau concept : un fichier dont le nom commence par un point `.` est CACHÉ : un `ls` ordinaire ne le montre pas. Il existe pourtant bel et bien. Quelle option de `ls` révèle aussi les fichiers cachés ?",
+   "Piste concrète : dans `~/Jardin`, fais `ls -A` : trois pièces cachées apparaissent, nommées `.<nombre>_piece_1`, `.<nombre>_piece_2` et `.<nombre>_piece_3` (le nombre change à chaque partie). Déplace-les vers `~/Foret/Hutte/Coffre` — la touche Tab complète ces noms à rallonge pour toi.",
+   "La commande : depuis `~/Jardin` : `mv .*_piece_1 .*_piece_2 .*_piece_3 ~/Foret/Hutte/Coffre` (ou tape les noms exacts vus avec `ls -A`, Tab t'aidera) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: a file whose name starts with a dot `.` is HIDDEN: a plain `ls` does not show it. Yet it very much exists. Which `ls` option also reveals hidden files?",
+   "Concrete lead: in `~/Garden`, run `ls -A`: three hidden coins appear, named `.<number>_coin_1`, `.<number>_coin_2` and `.<number>_coin_3` (the number changes every game). Move them to `~/Forest/Hut/Chest` — the Tab key completes those long names for you.",
+   "The command: from `~/Garden`: `mv .*_coin_1 .*_coin_2 .*_coin_3 ~/Forest/Hut/Chest` (or type the exact names seen with `ls -A`, Tab will help) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "mv .",
+ "idiom_review": {
+  "fr": "Version pro : `mv .*_piece_* ~/Foret/Hutte/Coffre` déplace les trois pièces cachées d'un seul coup. Compromis : un motif `.*` tout nu correspond aussi à `.` et `..` — mets toujours un bout de nom après le point (comme `.*_piece_*`) et teste avec `ls` avant.",
+  "en": "Pro version: `mv .*_coin_* ~/Forest/Hut/Chest` moves all three hidden coins at once. Tradeoff: a bare `.*` pattern also matches `.` and `..` — always put part of the name after the dot (like `.*_coin_*`) and test with `ls` first."
+ }
+}

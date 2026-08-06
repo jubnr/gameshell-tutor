@@ -1,0 +1,27 @@
+{
+ "mission": "processes/02_ps_kill_signal",
+ "intent": "No process named 'spell' (fr: 'sortilege') may remain running AND the recorded pids file must contain more than one entry — proving you first sent the standard TERM signal (which the spell survives by respawning) before finishing it with SIGKILL.",
+ "intent_lang": {
+  "fr": "But : essayer D'ABORD le signal standard (`kill`) sur le `sortilege` protégé — il renaîtra en te narguant — puis l'achever avec le signal KILL, impossible à ignorer.",
+  "en": "Goal: FIRST try the standard signal (`kill`) on the protected `spell` — it will respawn and taunt you — then finish it with the KILL signal, which cannot be ignored."
+ },
+ "concepts": ["ps", "kill", "signals", "SIGTERM", "SIGKILL", "kill -9"],
+ "danger_note": "kill -9 cannot be caught or ignored: the process gets no chance to clean up. Real-world etiquette: always try plain kill (TERM) first — here the check even requires that TERM attempt.",
+ "hints": {
+  "fr": [
+   "Niveau concept : `kill` n'est pas une mise à mort, c'est l'envoi d'un SIGNAL. Par défaut c'est TERM (« termine-toi, s'il te plaît ») — et un processus peut l'intercepter. Le signal KILL (numéro 9), lui, ne peut PAS être ignoré. Que va faire un sortilège « protégé » quand il reçoit TERM ?",
+   "Piste concrète : `ps` te donne le PID du `sortilege`. Envoie-lui d'abord un `kill PID` normal : il te nargue (« Il va falloir faire mieux que ça ! ») et RENAÎT avec un NOUVEAU PID. C'est voulu — la validation exige cette tentative TERM. Refais `ps` pour trouver le nouveau numéro avant le coup de grâce.",
+   "Les commandes : `kill PID` (il renaît), puis `ps` pour lire le nouveau PID, puis `kill -9 NOUVEAU_PID` (équivalent : `kill -s KILL NOUVEAU_PID`) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `kill` is not an execution, it SENDS A SIGNAL. The default is TERM ('please terminate') — and a process can catch it. The KILL signal (number 9) CANNOT be ignored. What will a 'protected' spell do when it receives TERM?",
+   "Concrete lead: `ps` gives you the `spell`'s PID. First send it a plain `kill PID`: it taunts you ('You'll need to do better than that!') and RESPAWNS with a NEW PID. That is intended — the check requires this TERM attempt. Run `ps` again to find the new number before the final blow.",
+   "The commands: `kill PID` (it respawns), then `ps` to read the new PID, then `kill -9 NEW_PID` (equivalent: `kill -s KILL NEW_PID`) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "kill",
+ "idiom_review": {
+  "fr": "Retiens l'étiquette des signaux : `kill PID` (TERM) laisse le programme ranger ses affaires ; `kill -9 PID` (KILL) l'abat sans préavis — dernier recours seulement. Trois écritures équivalentes : `kill -9`, `kill -s KILL`, `kill -KILL`. Et `kill -l` liste tous les signaux disponibles.",
+  "en": "Remember signal etiquette: `kill PID` (TERM) lets the program tidy up; `kill -9 PID` (KILL) shoots it with no warning — last resort only. Three equivalent spellings: `kill -9`, `kill -s KILL`, `kill -KILL`. And `kill -l` lists all available signals."
+ }
+}

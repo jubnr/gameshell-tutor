@@ -1,0 +1,32 @@
+{
+ "mission": "finding_files_maze/03_find_1",
+ "intent": "Two gold coins are hidden in a large 3-level maze (10 doors per room) under ~/Garden/Maze: one file ends with gold_coin_1 and the other with GolD_CoiN_2 (mixed case). Success = both coins, with their exact original contents, are in the chest ~/Forest/Hut/Chest (names ending _1 and _2).",
+ "intent_lang": {
+  "fr": "But : utiliser `find` pour dénicher les DEUX pièces d'or du grand labyrinthe — attention, l'une a une casse farfelue — et les déplacer dans ton coffre.",
+  "en": "Goal: use `find` to dig up BOTH gold coins in the big maze — beware, one has funny letter casing — and move them into your chest."
+ },
+ "concepts": [
+  "find",
+  "-name",
+  "-iname",
+  "casse (majuscules/minuscules)",
+  "mv"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : `find DOSSIER -name 'MOTIF'` fouille récursivement tout un arbre et affiche les chemins qui correspondent. Mais `-name` distingue majuscules et minuscules… et une des deux pièces s'amuse avec la casse. Quelle variante de `-name` ignore la casse ?",
+   "Piste concrète : `find ~/Jardin/Labyrinthe -iname '*piece_d_or*'` affiche les deux chemins d'un coup : un fichier `piece_d_or_1` et un `PieCe_D_oR_2` (c'est pour lui qu'il faut `-iname` !). Ensuite déplace chacun dans `~/Foret/Hutte/Coffre` avec `mv` (copie-colle les chemins ou utilise Tab).",
+   "La commande : `find ~/Jardin/Labyrinthe -iname '*piece_d_or*' -exec mv {} ~/Foret/Hutte/Coffre/ \\;` (ou deux `mv` avec les chemins affichés par find) — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `find DIR -name 'PATTERN'` sweeps a whole tree recursively and prints the matching paths. But `-name` is case-sensitive… and one of the two coins plays games with letter case. Which variant of `-name` ignores case?",
+   "Concrete lead: `find ~/Garden/Maze -iname '*gold_coin*'` prints both paths at once: a `gold_coin_1` file and a `GolD_CoiN_2` one (that one is why you need `-iname`!). Then move each into `~/Forest/Hut/Chest` with `mv` (copy-paste the paths or use Tab).",
+   "The command: `find ~/Garden/Maze -iname '*gold_coin*' -exec mv {} ~/Forest/Hut/Chest/ \\;` (or two `mv` with the paths printed by find) — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "-name ",
+ "idiom_review": {
+  "fr": "Version pro : `-iname` ignore la casse là où `-name` la respecte — ici `-name '*piece_d_or*'` raterait `PieCe_D_oR_2`. Et `-exec mv {} destination \\;` enchaîne directement l'action sur chaque résultat, sans copier-coller. Compromis : `-iname` peut ramener plus de résultats que prévu, et `-exec` agit sans te montrer la liste d'abord — lance toujours le `find` nu avant d'y greffer un `-exec`.",
+  "en": "Pro version: `-iname` ignores case where `-name` respects it — here `-name '*gold_coin*'` would miss `GolD_CoiN_2`. And `-exec mv {} destination \\;` chains the action on every result directly, no copy-paste. Tradeoff: `-iname` can bring back more matches than expected, and `-exec` acts without showing you the list first — always run the bare `find` before grafting an `-exec` onto it."
+ }
+}

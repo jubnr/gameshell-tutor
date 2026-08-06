@@ -1,0 +1,26 @@
+{
+ "mission": "stdin_stdout_stderr/01_stdin_additions",
+ "intent": "Answer Merlin's five random addition questions correctly: the check asks them one by one and reads each answer from standard input — the keyboard, by default. Any wrong or non-numeric answer fails.",
+ "intent_lang": {
+  "fr": "But : répondre juste aux 5 additions que Merlin te pose une par une — il lit tes réponses sur l'entrée standard, c'est-à-dire ton clavier.",
+  "en": "Goal: correctly answer the 5 sums Merlin asks one by one — he reads your answers on standard input, that is, your keyboard."
+ },
+ "concepts": ["stdin", "interactive input", "keyboard as default stdin"],
+ "hints": {
+  "fr": [
+   "Niveau concept : quand un programme attend une réponse, il lit son ENTRÉE STANDARD (stdin). Par défaut, stdin est branchée… sur ton clavier. D'après toi, d'où viendront les réponses que Merlin va lire ?",
+   "Piste concrète : Merlin pose 5 additions de nombres entre 1 et 100 (du genre `42 + 57 = ??`). Il n'y a AUCUNE limite de temps : prends le temps de calculer, tape uniquement le nombre, puis Entrée. Une réponse fausse ou vide interrompt l'épreuve — tu pourras retenter.",
+   "Pas de commande magique ici : c'est un duel de calcul mental au clavier, une somme après l'autre — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: when a program waits for an answer, it reads its STANDARD INPUT (stdin). By default, stdin is plugged into… your keyboard. Where do you think the answers Merlin reads will come from?",
+   "Concrete lead: Merlin asks 5 sums of numbers between 1 and 100 (like `42 + 57 = ??`). There is NO time limit: take your time, type only the number, then Enter. A wrong or empty answer ends the trial — you can try again.",
+   "No magic command here: it is a mental-math duel at the keyboard, one sum after another — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "check",
+ "idiom_review": {
+  "fr": "Ce que tu viens de vivre EST la leçon : répondre au clavier, c'est nourrir la stdin d'un programme à la main. Retiens bien la sensation — à la prochaine épreuve, Merlin ajoutera une limite de temps intenable, et il faudra brancher stdin sur autre chose que tes doigts (indice : `< fichier`).",
+  "en": "What you just did IS the lesson: answering at the keyboard means feeding a program's stdin by hand. Remember the feeling — in the next trial, Merlin adds an impossible time limit, and you will have to plug stdin into something other than your fingers (hint: `< file`)."
+ }
+}

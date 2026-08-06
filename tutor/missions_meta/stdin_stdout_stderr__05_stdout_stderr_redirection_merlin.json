@@ -1,0 +1,27 @@
+{
+ "mission": "stdin_stdout_stderr/05_stdout_stderr_redirection_merlin",
+ "intent": "Give the secret key hidden in Merlin's stderr stream: ./merlin interleaves a readable message on stdout ('the secret key is on stderr') with the 200-character key on stderr; the check asks for the key and its stdin must NOT be a terminal — the answer has to arrive through a redirection (typing it by hand is rejected).",
+ "intent_lang": {
+  "fr": "But : séparer les deux flux du charabia de Merlin — la clé secrète de 200 caractères est sur sa stderr — puis donner cette clé à la vérification PAR une redirection de fichier (la taper à la main est refusé).",
+  "en": "Goal: split Merlin's gibberish into its two streams — the 200-character secret key is on his stderr — then feed that key to the check THROUGH a file redirection (typing it by hand is rejected)."
+ },
+ "concepts": [">", "2>", "<", "stdout vs stderr", "./program"],
+ "danger_note": "`>` truncates its target before writing: never redirect output onto the program itself (a classic accident here is `./merlin > merlin`, which destroys Merlin).",
+ "hints": {
+  "fr": [
+   "Niveau concept : Merlin écrit DEUX flux mélangés sur ton écran : stdout et stderr. On peut les séparer en redirigeant chacun vers une destination différente (`> fichier` pour stdout, `2> fichier` pour stderr). Lequel des deux cache la clé ? Fais parler chaque flux séparément.",
+   "Piste concrète : dans `~/Chateau/Observatoire`, lance `./merlin 2> /dev/null` : privé de son stderr, son stdout devient lisible — « LACLESECRETEESTSURSTDERR ». Capture donc l'autre flux dans un fichier : `./merlin > /dev/null 2> cle_secrete` (surtout pas `> merlin`, tu écraserais le pauvre vieux !). Le fichier `cle_secrete` contient maintenant la clé de 200 caractères — intapable à la main.",
+   "La solution : une fois `cle_secrete` rempli, la question de la vérification doit lire sa réponse depuis ce fichier — ajoute `< cle_secrete` à la commande de vérification (répondre au clavier est refusé) — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: Merlin writes TWO interleaved streams to your screen: stdout and stderr. You can split them by redirecting each to a different destination (`> file` for stdout, `2> file` for stderr). Which one hides the key? Make each stream speak on its own.",
+   "Concrete lead: in `~/Castle/Observatory`, run `./merlin 2> /dev/null`: with stderr muted, his stdout becomes readable — 'THESECRETKEYISONSTDERR'. So capture the other stream into a file: `./merlin > /dev/null 2> secret_key` (never `> merlin`, you would crush the old man!). The `secret_key` file now holds the 200-character key — untypeable by hand.",
+   "The solution: once `secret_key` is filled, the check's question must read its answer from that file — append `< secret_key` to the check command (answering at the keyboard is rejected) — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "2>",
+ "idiom_review": {
+  "fr": "Le triptyque est complet : `> fichier` (stdout), `2> fichier` (stderr), `< fichier` (stdin) — tu viens d'utiliser les trois sur une même mission, bravo. Variante à connaître : `2>&1` FUSIONNE stderr dans stdout (utile pour tout journaliser d'un coup), alors qu'ici on voulait justement les SÉPARER. Choisis selon le besoin : séparer pour trier, fusionner pour archiver.",
+  "en": "The triptych is complete: `> file` (stdout), `2> file` (stderr), `< file` (stdin) — you used all three in a single mission, well done. Variant worth knowing: `2>&1` MERGES stderr into stdout (handy to log everything at once), whereas here we specifically wanted to SEPARATE them. Choose per need: split to sort, merge to archive."
+ }
+}

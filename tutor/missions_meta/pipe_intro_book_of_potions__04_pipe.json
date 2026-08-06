@@ -1,0 +1,28 @@
+{
+ "mission": "pipe_intro_book_of_potions/04_pipe",
+ "intent": "Be in the cave with Servillus, leave the potion book untouched, and have your last command (containing 'tail') print exactly the 16 numbered steps of the elixir of youth — i.e. the output of cat page_03 page_04 | tail -n 16: no title, no warning line.",
+ "intent_lang": {
+  "fr": "But : depuis la grotte, afficher UNIQUEMENT les 16 étapes de l'« Élixir de jeunesse » (pages 3 et 4), sans le titre ni l'avertissement, en branchant `cat` sur `tail` avec un tube `|`.",
+  "en": "Goal: from the cave, display ONLY the 16 steps of the 'Elixir of youth' (pages 3 and 4), without the title or the warning line, by piping `cat` into `tail` with `|`."
+ },
+ "concepts": ["|", "cat", "tail", "stdin", "stdout"],
+ "danger_note": "The check diffs the book of potions against a pristine copy: any `>` redirection into Book_of_potions/ (or any edit) fails the mission.",
+ "open_solution": true,
+ "hints": {
+  "fr": [
+   "Niveau concept : le tube `|` branche la sortie standard d'une commande sur l'entrée standard de la suivante. Et `tail` sans nom de fichier lit ce qui arrive sur son entrée standard. La recette s'étale sur DEUX pages : que faut-il assembler avant de découper ?",
+   "Piste concrète : l'« Élixir de jeunesse » occupe les pages 3-4 (regarde la table des matières). `cat Livre_de_potions/page_03 Livre_de_potions/page_04` recolle la recette entière : 3 lignes de titre + 1 ligne ATTENTION + 16 étapes. Piège classique : n'afficher que `page_04`, il manquerait les étapes 1 à 7 ! Il ne reste qu'à garder les 16 dernières lignes du tout.",
+   "Une solution possible (il y en a d'autres !) : depuis `~/Montagne/Grotte` : `cat Livre_de_potions/page_03 Livre_de_potions/page_04 | tail -n 16` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: the pipe `|` plugs one command's standard output into the next one's standard input. And `tail` without a filename reads from its standard input. The recipe spans TWO pages: what must be assembled before cutting?",
+   "Concrete lead: the 'Elixir of youth' covers pages 3-4 (see the table of contents). `cat Book_of_potions/page_03 Book_of_potions/page_04` reassembles the whole recipe: 3 title lines + 1 WARNING line + 16 steps. Classic trap: showing only `page_04` would miss steps 1 to 7! All that is left is keeping the last 16 lines of the whole.",
+   "One possible solution (there are others!): from `~/Mountain/Cave`: `cat Book_of_potions/page_03 Book_of_potions/page_04 | tail -n 16` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "|",
+ "idiom_review": {
+  "fr": "Bien joué — plusieurs chemins mènent à la potion. Compare : `cat page_03 page_04 | tail -n 16` (garder les 16 dernières) vs `cat ... | tail -n +5` (sauter les 4 premières) — même résultat, deux façons de compter. Et `cat Livre_de_potions/page_0[34]` raccourcit la liste de fichiers. L'idiomatique : compter du côté que tu connais le mieux (nombre d'étapes vs taille de l'en-tête).",
+  "en": "Well done — several paths lead to the potion. Compare: `cat page_03 page_04 | tail -n 16` (keep the last 16) vs `cat ... | tail -n +5` (skip the first 4) — same result, two ways of counting. And `cat Book_of_potions/page_0[34]` shortens the file list. Idiomatic = count from the side you know best (number of steps vs header size)."
+ }
+}

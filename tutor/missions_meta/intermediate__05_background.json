@@ -1,0 +1,31 @@
+{
+ "mission": "intermediate/05_background",
+ "intent": "The check clears the flarigo PID file, waits 2 seconds, then counts how many flarigo processes reported their PID: it needs at least 3. Success = launch at least 3 `flarigo` in the background so they explode simultaneously, and validate immediately while they are still in the sky.",
+ "intent_lang": {
+  "fr": "But : tirer au moins 3 feux d'artifice `flarigo` SIMULTANÉS (avec `&`) et faire vérifier pendant qu'ils sont encore dans le ciel.",
+  "en": "Goal: fire at least 3 SIMULTANEOUS `flarigo` fireworks (with `&`) and get them checked while they are still in the sky."
+ },
+ "concepts": [
+  "&",
+  "arrière-plan",
+  "exécution parallèle",
+  ";"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cmd1 ; cmd2 ; cmd3` exécute les commandes l'une APRÈS l'autre, alors que `cmd1 & cmd2 & cmd3 &` les lance toutes en arrière-plan, en PARALLÈLE. L'artificier veut voir 3 fusées en même temps : laquelle des deux écritures produit des explosions simultanées ?",
+   "Piste concrète : chaque `flarigo` ne dure que quelques secondes. Enchaîne au moins trois `flarigo` séparés par `&` (avec un `&` final pour garder la main) sur UNE seule ligne, puis demande la vérification tout de suite : l'artificier ne compte que les fusées qui explosent pendant qu'il regarde le ciel.",
+   "La commande : `flarigo & flarigo & flarigo &` puis demande-moi de vérifier immédiatement, pendant que les fusées montent — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cmd1 ; cmd2 ; cmd3` runs the commands one AFTER the other, while `cmd1 & cmd2 & cmd3 &` starts them all in the background, in PARALLEL. The pyrotechnician wants to see 3 rockets at the same time: which of the two forms produces simultaneous explosions?",
+   "Concrete lead: each `flarigo` only lasts a few seconds. Chain at least three `flarigo` separated by `&` (with a final `&` to keep your prompt) on ONE line, then ask for the check right away: the pyrotechnician only counts rockets exploding while he is watching the sky.",
+   "The command: `flarigo & flarigo & flarigo &` then ask me to check immediately, while the rockets are going up — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "; flarigo",
+ "idiom_review": {
+  "fr": "Version pro : `flarigo & flarigo & flarigo & wait` lance les trois en parallèle puis attend proprement qu'ils soient tous finis avant de rendre la main. Compromis : `wait` bloque le shell jusqu'à la fin des tâches de fond — parfait dans un script, moins utile ici où il faut justement valider PENDANT que les fusées volent. Retiens la différence : `;` = séquence, `&` = parallèle.",
+  "en": "Pro version: `flarigo & flarigo & flarigo & wait` starts all three in parallel then cleanly waits for them all to finish before returning. Tradeoff: `wait` blocks the shell until the background jobs end — great in a script, less useful here where you must validate WHILE the rockets are flying. Remember the difference: `;` = sequence, `&` = parallel."
+ }
+}

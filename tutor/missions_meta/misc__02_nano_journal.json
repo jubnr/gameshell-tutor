@@ -1,0 +1,26 @@
+{
+ "mission": "misc/02_nano_journal",
+ "intent": "A regular, NON-EMPTY file named journal.txt must exist directly in the chest ($GSH_HOME/Forest/Hut/Chest/journal.txt); the check rejects a directory of that name or an empty file (and cleans up wrong attempts).",
+ "intent_lang": {
+  "fr": "But : créer avec nano un fichier journal.txt non vide dans ton Coffre (Foret/Hutte/Coffre).",
+  "en": "Goal: use nano to create a non-empty journal.txt file in your Chest (Forest/Hut/Chest)."
+ },
+ "concepts": ["nano", "fichiers vs répertoires"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `nano FICHIER` ouvre un éditeur de texte dans le terminal — si le fichier n'existe pas, il sera créé à la sauvegarde. Les raccourcis s'affichent en bas : Ctrl-O sauve, Ctrl-X quitte. Le journal doit contenir au moins un petit message : que se passe-t-il si tu quittes sans rien écrire ?",
+   "Piste concrète : `journal.txt` est un FICHIER à créer directement dans le répertoire `~/Foret/Hutte/Coffre` — pas un nouveau répertoire, et pas ailleurs. Tu peux donner le chemin complet à `nano` sans bouger de place.",
+   "La commande : `nano ~/Foret/Hutte/Coffre/journal.txt`, écris une phrase, puis Ctrl-O et Entrée pour sauver, et Ctrl-X pour quitter — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `nano FILE` opens a text editor in the terminal — if the file does not exist, it is created when you save. The shortcuts are listed at the bottom: Ctrl-O saves, Ctrl-X quits. The journal must contain at least a short message: what happens if you quit without writing anything?",
+   "Concrete lead: `journal.txt` is a FILE to create directly inside the `~/Forest/Hut/Chest` directory — not a new directory, and nowhere else. You can give `nano` the full path without moving.",
+   "The command: `nano ~/Forest/Hut/Chest/journal.txt`, write a sentence, then Ctrl-O and Enter to save, and Ctrl-X to quit — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "nano ",
+ "idiom_review": {
+  "fr": "Version pro : `echo \"ma première note\" > ~/Foret/Hutte/Coffre/journal.txt` crée le fichier non vide en une seule commande, sans ouvrir d'éditeur. Compromis : la redirection `>` ÉCRASE sans prévenir un fichier existant (`>>` ajoute à la fin), alors que nano te montre le contenu avant de le modifier.",
+  "en": "Pro version: `echo \"my first note\" > ~/Forest/Hut/Chest/journal.txt` creates the non-empty file in a single command, without opening an editor. Tradeoff: the `>` redirection OVERWRITES an existing file without warning (`>>` appends), while nano shows you the content before you change it."
+ }
+}

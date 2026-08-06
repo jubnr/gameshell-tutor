@@ -1,0 +1,33 @@
+{
+ "mission": "permissions/03_chmod_rw_file_dir_throne_room",
+ "intent": "The Safe directory in the throne room and the crown file inside are both chmod 000. Success = the crown is in the chest ~/Forest/Hut/Chest, readable, with content identical to the original, and you answer the interactive check with the 3 digits inscribed on the crown's last line.",
+ "intent_lang": {
+  "fr": "But : rouvrir le Coffre_fort de la salle du trône (droits du dossier), rendre la couronne lisible, mémoriser les 3 chiffres gravés à sa base, et la déplacer dans TON coffre.",
+  "en": "Goal: reopen the Safe in the throne room (directory permissions), make the crown readable, memorize the 3 digits engraved on its base, and move it into YOUR chest."
+ },
+ "concepts": [
+  "chmod",
+  "droits r/w/x sur un répertoire",
+  "droit r sur un fichier",
+  "cat",
+  "mv"
+ ],
+ "danger_note": "The crown's content is compared byte-for-byte: move it with mv, never recreate or edit it. The check asks for the 3 digits, so read them before answering.",
+ "hints": {
+  "fr": [
+   "Niveau concept : sur un répertoire, `r` = lister son contenu, `x` = y entrer, `w` = y créer ou en RETIRER des fichiers (donc `mv` vers l'extérieur a besoin de `w`+`x`). Sur un fichier, `r` = le lire. Ici le Coffre_fort et la couronne sont tous deux à 000 (aucun droit) : de quels droits exacts as-tu besoin, et sur quoi ?",
+   "Piste concrète : dans `~/Chateau/Batiment_principal/Salle_du_trone`, redonne-toi tous les droits sur le dossier : `chmod u+rwx Coffre_fort`. Puis rends la couronne lisible : `chmod u+r Coffre_fort/couronne`. Lis les 3 chiffres gravés en bas de la couronne avec `cat`, puis déplace-la TELLE QUELLE (sans la réécrire) vers `~/Foret/Hutte/Coffre`.",
+   "Les commandes : `chmod u+rwx Coffre_fort && chmod u+r Coffre_fort/couronne && cat Coffre_fort/couronne && mv Coffre_fort/couronne ~/Foret/Hutte/Coffre/` — retiens bien les 3 chiffres de la dernière ligne (je te les demanderai) — dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: on a directory, `r` = list its contents, `x` = enter it, `w` = create or REMOVE files in it (so `mv`-ing a file out needs `w`+`x`). On a file, `r` = read it. Here both the Safe and the crown are chmod 000 (no rights at all): exactly which permissions do you need, and on what?",
+   "Concrete lead: in `~/Castle/Main_building/Throne_room`, give yourself full rights on the directory: `chmod u+rwx Safe`. Then make the crown readable: `chmod u+r Safe/crown`. Read the 3 digits engraved at the bottom of the crown with `cat`, then move it AS IS (do not rewrite it) into `~/Forest/Hut/Chest`.",
+   "The commands: `chmod u+rwx Safe && chmod u+r Safe/crown && cat Safe/crown && mv Safe/crown ~/Forest/Hut/Chest/` — memorize the 3 digits on the last line (I will ask you for them) — tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "chmod 777",
+ "idiom_review": {
+  "fr": "Version pro : `chmod u+rwx Coffre_fort` équivaut à `chmod 700 Coffre_fort` en octal — tous les droits pour toi, rien pour les autres ; `chmod 777` donnerait la couronne à tout le royaume. Astuce : `mv` d'un fichier illisible fonctionne (déplacer modifie le RÉPERTOIRE, pas le fichier), mais la couronne doit être lisible à l'arrivée, d'où le `chmod u+r`. Compromis : l'octal fixe tout d'un coup mais s'apprend par cœur ; le symbolique se lit tout seul.",
+  "en": "Pro version: `chmod u+rwx Safe` is `chmod 700 Safe` in octal — full rights for you, none for anyone else; `chmod 777` would hand the crown to the whole kingdom. Trick: `mv`-ing an unreadable file works (moving modifies the DIRECTORY, not the file), but the crown must be readable at destination, hence the `chmod u+r`. Tradeoff: octal sets everything at once but must be memorized; symbolic reads itself."
+ }
+}

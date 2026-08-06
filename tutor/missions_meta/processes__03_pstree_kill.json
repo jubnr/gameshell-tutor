@@ -1,0 +1,27 @@
+{
+ "mission": "processes/03_pstree_kill",
+ "intent": "Kill exactly the mischievous imp's three 'spell' child processes (the fairy, her three spells and the imp itself must stay alive), then delete every *_coal file from the castle cellar while keeping all the *_snowflake files.",
+ "intent_lang": {
+  "fr": "But : tuer UNIQUEMENT les 3 `sortilege` enfants du `lutin_espiegle` (sans toucher à la `gentille_fee`, à ses sortilèges, ni au lutin lui-même), puis nettoyer les fichiers `*_charbon` de la cave en épargnant les `*_flocon_de_neige`.",
+  "en": "Goal: kill ONLY the 3 `spell` children of the `mischievous_imp` (leaving the `nice_fairy`, her spells and the imp itself untouched), then clean the `*_coal` files out of the cellar while sparing the `*_snowflake` files."
+ },
+ "concepts": ["pstree", "kill", "$$", "process tree", "rm", "globs"],
+ "danger_note": "One wrong kill fails the mission: the fairy, the imp and the fairy's three spells must survive. And rm only the *_coal files — melting a snowflake also fails.",
+ "hints": {
+  "fr": [
+   "Niveau concept : les processus forment un ARBRE parent→enfants, et `pstree -p PID` le dessine avec les numéros. Deux magiciens lancent des processus `sortilege` au nom IDENTIQUE : comment distinguer ceux du lutin de ceux de la fée ? Par leur PARENT. (Astuce : `$$` contient le PID de ton shell.)",
+   "Piste concrète : `pstree -p $$` montre, sous `lutin_espiegle`, 3 `sortilege` avec leurs PID — ce sont tes cibles ; ceux sous `gentille_fee` sont intouchables, tout comme les deux magiciens. Tue d'abord les sortilèges (sinon le charbon continue d'apparaître), puis va dans `~/Chateau/Cave` : vérifie avec `ls *_charbon` avant de supprimer.",
+   "Les commandes : `kill PID1 PID2 PID3` (les 3 `sortilege` du lutin, lus dans `pstree -p $$`), puis `cd ~/Chateau/Cave` et `rm *_charbon` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: processes form a parent→child TREE, and `pstree -p PID` draws it with the numbers. Two magicians run `spell` processes with IDENTICAL names: how do you tell the imp's from the fairy's? By their PARENT. (Tip: `$$` holds your shell's PID.)",
+   "Concrete lead: `pstree -p $$` shows, under `mischievous_imp`, 3 `spell` entries with their PIDs — those are your targets; the ones under `nice_fairy` are off limits, as are both magicians. Kill the spells first (otherwise coal keeps appearing), then go to `~/Castle/Cellar`: check with `ls *_coal` before deleting.",
+   "The commands: `kill PID1 PID2 PID3` (the imp's 3 `spell` PIDs, read from `pstree -p $$`), then `cd ~/Castle/Cellar` and `rm *_coal` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "pstree",
+ "idiom_review": {
+  "fr": "Compare les vues : `ps -o pid,ppid,comm` donne les liens de parenté en TABLE (colonne PPID), `pstree -p` les dessine en ARBRE — bien plus lisible quand les noms se ressemblent. Autres bons réflexes : `kill PID1 PID2 PID3` accepte plusieurs cibles en un coup, et avant un `rm` à joker, on teste toujours le motif avec `ls` (ici `ls *_charbon`).",
+  "en": "Compare the views: `ps -o pid,ppid,comm` gives parenthood as a TABLE (PPID column), `pstree -p` draws it as a TREE — far more readable when names look alike. Other good reflexes: `kill PID1 PID2 PID3` takes several targets at once, and before a globbed `rm`, always test the pattern with `ls` (here `ls *_coal`)."
+ }
+}

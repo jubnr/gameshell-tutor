@@ -1,0 +1,15 @@
+# Netlify config for the gameshell-tutor demo.
+# The site is one static, self-contained HTML file: nothing to build here.
+# Deploying from the repo root, "publish" points at this folder.
+
+[build]
+  publish = "demo"
+  command = ""
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "no-referrer"
+    # the page loads no scripts, styles, fonts or images from anywhere
+    Content-Security-Policy = "default-src 'none'; style-src 'unsafe-inline'; script-src 'unsafe-inline'; base-uri 'none'; form-action 'none'"

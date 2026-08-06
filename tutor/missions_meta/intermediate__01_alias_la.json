@@ -1,0 +1,30 @@
+{
+ "mission": "intermediate/01_alias_la",
+ "intent": "Define a shell alias `la` whose definition is exactly `ls -A` (the check strips spaces/quotes and compares to `ls-A`), and that runs without error. Success = `alias la` exists, `la /` works, and it maps to `ls -A`.",
+ "intent_lang": {
+  "fr": "But : créer un alias `la` qui exécute exactement `ls -A` (et découvrir le caillou caché là où tu es).",
+  "en": "Goal: create an alias `la` that runs exactly `ls -A` (and spot the rock hidden right where you are)."
+ },
+ "concepts": [
+  "alias",
+  "ls -A",
+  "fichiers cachés"
+ ],
+ "hints": {
+  "fr": [
+   "Niveau concept : un alias est un raccourci que le shell remplace par une commande complète avant de l'exécuter. La syntaxe est `alias NOM='COMMANDE'`, sans espaces autour du `=`. Quelle option de `ls` affiche les fichiers cachés (ceux qui commencent par un point) sans montrer `.` et `..` ?",
+   "Piste concrète : c'est l'option `-A` (A majuscule ! `-a` montre aussi `.` et `..` et ne sera pas accepté ici). Définis donc l'alias `la` pour `ls -A`, puis tape `la` pour vérifier : un joli caillou caché devrait apparaître là où tu es.",
+   "La commande : `alias la='ls -A'` puis tape `la` pour voir les fichiers cachés — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: an alias is a shortcut the shell replaces with a full command before running it. The syntax is `alias NAME='COMMAND'`, with no spaces around the `=`. Which `ls` option shows hidden files (the dot files) without listing `.` and `..`?",
+   "Concrete lead: that option is `-A` (capital A! `-a` also shows `.` and `..` and will not be accepted here). Define the alias `la` for `ls -A`, then type `la` to check: a nice hidden rock should show up right where you are.",
+   "The command: `alias la='ls -A'` then type `la` to see the hidden files — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "ls -a",
+ "idiom_review": {
+  "fr": "Version pro : `ls -A` (A majuscule) est souvent préféré à `ls -a` car il cache les entrées `.` et `..`, qui sont toujours là et n'apportent rien. Compromis : `-a` reste utile pour se rappeler que `.` (ici) et `..` (parent) existent dans chaque répertoire. Note aussi qu'un alias défini dans le shell est oublié en fin de session s'il n'est pas enregistré dans ton fichier de configuration `~/.gshrc` (le jeu enregistre pour toi les alias des missions).",
+  "en": "Pro version: `ls -A` (capital A) is usually preferred over `ls -a` because it hides the `.` and `..` entries, which are always there and add nothing. Tradeoff: `-a` is a good reminder that `.` (here) and `..` (parent) exist in every directory. Also note that an alias defined in the shell is forgotten when the session ends unless it is saved in your `~/.gshrc` config file (the game records mission aliases for you)."
+ }
+}

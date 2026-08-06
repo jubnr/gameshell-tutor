@@ -1,0 +1,26 @@
+{
+ "mission": "basic/03_cd_HOME_throne",
+ "intent": "Finish in $GSH_HOME/Castle/Main_building/Throne_room with the second-to-last shell command in the history being exactly `cd` (or `cd ~`) — chains of `cd ..` are rejected — and the last command taking you directly to the throne room.",
+ "intent_lang": {
+  "fr": "But : revenir au point de départ avec `cd` seul, puis rejoindre la salle du trône en UNE seule commande.",
+  "en": "Goal: return to the starting point with a bare `cd`, then reach the throne room in ONE single command."
+ },
+ "concepts": ["cd", "chemins composés", "~"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cd` sans aucun argument te ramène TOUJOURS au point de départ, d'où que tu sois. Et un chemin peut enchaîner plusieurs lieux séparés par des `/`. Comment atteindre la salle du trône avec un seul chemin depuis le départ ?",
+   "Piste concrète : tu as été téléporté·e dans `~/Chateau/Cave`. Le contrôle exige exactement : avant-dernière commande = `cd` tout seul (les `cd ..` en chaîne sont refusés !), dernière commande = un saut direct vers `Chateau/Batiment_principal/Salle_du_trone`.",
+   "La commande : tape `cd` (seul), puis `cd Chateau/Batiment_principal/Salle_du_trone` — je validerai aussitôt."
+  ],
+  "en": [
+   "Concept: `cd` with no argument ALWAYS brings you back to the starting point, wherever you are. And a path can chain several places separated by `/`. How could you reach the throne room with a single path from the start?",
+   "Concrete lead: you have been teleported into `~/Castle/Cellar`. The check demands exactly: second-to-last command = a bare `cd` (chains of `cd ..` are rejected!), last command = a direct jump to `Castle/Main_building/Throne_room`.",
+   "The command: type `cd` (alone), then `cd Castle/Main_building/Throne_room` — I will validate right away."
+  ]
+ },
+ "idiom_trigger": "cd ..",
+ "idiom_review": {
+  "fr": "Version pro : `cd` tout seul (ou `cd ~`) remplace n'importe quelle chaîne de `cd ..` pour rentrer à la maison, et `cd ~/Chateau/Batiment_principal/Salle_du_trone` marche depuis n'importe où grâce au `~`. Compromis : `cd` seul ne mène qu'au répertoire initial — pour toute autre destination, il faut donner le chemin.",
+  "en": "Pro version: a bare `cd` (or `cd ~`) replaces any chain of `cd ..` to get home, and `cd ~/Castle/Main_building/Throne_room` works from anywhere thanks to `~`. Tradeoff: a bare `cd` only leads to the home directory — for any other destination you must give the path."
+ }
+}

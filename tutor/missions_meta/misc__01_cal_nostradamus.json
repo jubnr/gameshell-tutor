@@ -1,0 +1,26 @@
+{
+ "mission": "misc/01_cal_nostradamus",
+ "intent": "Know the day of the week of the random date announced in the mission statement (stored as YYYY-MM-DD in $GSH_TMP/date): the interactive check lists the 7 weekdays numbered 1-7 and compares your answer with the real weekday computed by `date`.",
+ "intent_lang": {
+  "fr": "But : trouver sur quel jour de la semaine tombe la date annoncée par Nostradamus, puis répondre au petit quiz de validation.",
+  "en": "Goal: find which day of the week Nostradamus's announced date falls on, then answer the validation quiz."
+ },
+ "concepts": ["cal"],
+ "hints": {
+  "fr": [
+   "Niveau concept : `cal ANNEE` affiche le calendrier des 12 mois d'une année, où chaque colonne correspond à un jour de la semaine. Quelle année et quel mois dois-tu chercher d'après l'énoncé de la mission ?",
+   "Piste concrète : la date annoncée change à chaque partie — relis l'énoncé pour la noter. Lance `cal` avec l'année en question, repère le bon mois, puis la colonne où tombe le jour. (`cal MOIS ANNEE`, ex. `cal 7 1969`, affiche directement un seul mois.)",
+   "La commande : `cal <annee_de_l_enonce>` puis lis la colonne du jour dans le bon mois ; quand tu connais le jour de la semaine, dis-moi `gm fini` quand tu es prêt·e."
+  ],
+  "en": [
+   "Concept: `cal YEAR` prints the calendar of all 12 months of a year, where each column corresponds to a day of the week. Which year and month should you look for according to the mission statement?",
+   "Concrete lead: the announced date changes every game — reread the statement to note it. Run `cal` with that year, find the right month, then the column where the day falls. (`cal MONTH YEAR`, e.g. `cal 7 1969`, prints a single month directly.)",
+   "The command: `cal <year_from_the_statement>` then read the day's column in the right month; once you know the weekday, tell me `gm fini` when ready."
+  ]
+ },
+ "idiom_trigger": "cal ",
+ "idiom_review": {
+  "fr": "Version pro : `date --date=\"AAAA-MM-JJ\" +%A` répond directement avec le jour de la semaine, sans lecture de calendrier — c'est d'ailleurs ce que fait le vérificateur en coulisses. Compromis : `cal` offre une vue d'ensemble lisible pour un humain, `date +%A` est exact et scriptable mais muet sur le contexte.",
+  "en": "Pro version: `date --date=\"YYYY-MM-DD\" +%A` answers directly with the weekday, no calendar reading — that is actually what the checker does behind the scenes. Tradeoff: `cal` gives a human-readable overview, `date +%A` is exact and scriptable but says nothing about the context."
+ }
+}
