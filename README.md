@@ -183,6 +183,20 @@ runner you like.
 **Side panel** (the older layout): `./play.sh --pane` opens a tmux split with
 the tutor on the right, using `/hint` and `/persona`.
 
+**One participant at a time**: `./subject.sh <id>` plays as a named subject and
+keeps everything they produce under `~/gameshell-subjects/<id>/`: their own copy
+of the game, their savefile, their sessions and their learner model. Progress
+resumes across launches, and two subjects never share state.
+
+```sh
+./subject.sh sub-01          # play as sub-01, created on first run
+./subject.sh --list          # subjects, current mission, session count
+./subject.sh --where sub-01  # print that subject's data directory
+```
+
+Set `GSH_SUBJECTS` to change the root. Archiving or deleting a participant is
+one `cp -r` or `rm -rf` of their directory.
+
 ## License
 
 GPLv3, like GameShell (see `LICENSE`). The game bundled in `game/` is

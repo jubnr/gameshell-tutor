@@ -16,6 +16,7 @@ All learner-facing content is bilingual (`fr` / `en`), keyed off `$LANG`.
 
 ```sh
 ./play.sh                              # play; bundled game in game/, no setup
+./subject.sh <id>                      # play as a named subject, state isolated
 ./play.sh <archive.sh | game_dir>      # use a different GameShell
 ./install.sh <archive.sh | game_dir>   # shim + goal texts + check sandbox list
 ./play.sh --pane                        # older tmux side-panel frontend
@@ -61,7 +62,11 @@ outbox/*.msg  <-  Outbox/StreamSink  <-  LLMClient (mock | http | ollama)
 
 Runtime state lives outside the repo, in
 `~/.local/share/gameshell-tutor/`: `config.json`, `sessions/<stamp>/`,
-`goals-cache/`, the learner model, and the RAG index.
+`goals-cache/`, the learner model, and the RAG index. `GSH_TUTOR_HOME` moves
+all of it, which is how `subject.sh` isolates participants: each gets its own
+tutor home AND its own copy of the game, because GameShell keeps progress
+inside the archive and the learner model is keyed on the game's
+`$GSH_CONFIG/uid`.
 
 ## Invariants that are easy to break
 
