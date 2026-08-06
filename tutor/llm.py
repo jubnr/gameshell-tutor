@@ -129,6 +129,38 @@ GM_COMMAND_MAP = (
     ("gsh help", "gm commandes"),
 )
 
+# Engine commands to strike from a briefing's "useful commands" list, because
+# the Game Master frontend does that job for the learner. `gsh check` is the
+# only one: victory is detected automatically after every command, so telling
+# the learner "run this to see whether you succeeded" right after promising
+# "I will proclaim your victory myself" reads as a contradiction.
+#
+# ONLY the definition entry goes. `gsh check` also appears inline in the prose
+# of three missions where running it is genuinely part of the task (it starts
+# the stdin missions, and submits the answer in cal_nostradamus); those keep
+# their `gm fini` rename from GM_COMMAND_MAP.
+DROPPED_COMMAND_ENTRIES = ("gsh check",)
+
+
+def drop_command_entry(body, cmd):
+    """Remove a `cmd` entry from a goal's command list: the line naming the
+    command, its indented description, and one trailing blank line. Entries
+    start at column 0, so an indented continuation belongs to this one."""
+    lines = body.splitlines()
+    out, i = [], 0
+    while i < len(lines):
+        if lines[i].strip() == cmd and not lines[i][:1].isspace():
+            i += 1
+            while i < len(lines) and lines[i][:1].isspace() and lines[i].strip():
+                i += 1
+            if i < len(lines) and not lines[i].strip():
+                i += 1
+            continue
+        out.append(lines[i])
+        i += 1
+    return "\n".join(out)
+
+
 ERROR_TEMPLATES = {
     "no_such_file": "err_no_such_file",
     "permission": "err_permission",
@@ -170,8 +202,11 @@ class MockLLMClient(LLMClient):
                                  in ("objectif", "mission goal", "obiettivo")):
                     lines.pop(0)
                 body = "\n".join(lines).strip()
-                # goal texts sometimes teach the engine's own gsh commands;
-                # the GM interface renames them (content stays verbatim)
+                # goal texts sometimes teach the engine's own gsh commands.
+                # Drop the ones the GM frontend has taken over entirely, then
+                # rename what is left (content otherwise stays verbatim).
+                for cmd in DROPPED_COMMAND_ENTRIES:
+                    body = drop_command_entry(body, cmd)
                 for old, new in GM_COMMAND_MAP:
                     body = body.replace(old, new)
                 # page breaks (\x06): the GM pauses before each section and

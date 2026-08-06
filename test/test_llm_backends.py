@@ -210,6 +210,46 @@ check("english too",
       victory(lang="en", mission_meta={}).startswith("🎉")
       and "adventurer" in victory(lang="en", mission_meta={}))
 
+print("== briefings drop commands the GM frontend replaced ==")
+GOAL = """Objectif
+========
+
+Allez tout en haut.
+
+
+Commandes utiles
+================
+
+cd LIEU
+  Se deplace vers le lieu donne.
+
+gsh check
+  Verifie si l'objectif de la mission a ete atteint.
+
+gsh reset
+  Re-initialise la mission au debut.
+
+
+Remarque
+--------
+
+Lancez ``gsh check`` quand vous saurez la reponse.
+"""
+brief = llm.MockLLMClient().respond(
+    {"kind": "mission_start", "lang": "fr", "mission_goal": GOAL,
+     "mission_name": "basic/01", "mission_nb": "1", "mission_meta": {},
+     "hint_level": 1}).replace("\x06", "")
+check("the `gsh check` command entry is gone",
+      "Verifie si l'objectif" not in brief)
+check("its description went with it, not just the name",
+      "gm fini\n  Verifie" not in brief)
+check("`gsh reset` entry survives, renamed",
+      "gm reset" in brief and "Re-initialise la mission" in brief)
+check("other entries untouched", "cd LIEU" in brief and "Se deplace" in brief)
+check("inline prose mentions are kept and renamed",
+      "Lancez ``gm fini`` quand vous saurez" in brief)
+check("no raw gsh survives the briefing", "gsh " not in brief)
+
 print("== resolve_backend precedence ==")
 for var in ("GSH_TUTOR_LLM_BACKEND", "GSH_TUTOR_LLM_URL"):
     os.environ.pop(var, None)
