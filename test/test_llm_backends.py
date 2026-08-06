@@ -250,6 +250,34 @@ check("inline prose mentions are kept and renamed",
       "Lancez ``gm fini`` quand vous saurez" in brief)
 check("no raw gsh survives the briefing", "gsh " not in brief)
 
+print("== the briefing never hands the learner the solution ==")
+LEAKY = {"intent": "Be at the top of the tower.",
+         "intent_lang": {"fr": "But : tout en haut (A/B/C/D).",
+                         "en": "Goal: the top (A/B/C/D)."}}
+brief_fr = llm.MockLLMClient().respond(
+    {"kind": "mission_start", "lang": "fr",
+     "mission_goal": "Allez tout en haut du donjon.",
+     "mission_name": "basic/01", "mission_nb": "1",
+     "mission_meta": LEAKY, "hint_level": 1})
+check("intent_lang is not shown to the learner", "A/B/C/D" not in brief_fr)
+check("the goal text itself is still narrated in full",
+      "Allez tout en haut du donjon." in brief_fr)
+check("the briefing still opens and closes in character",
+      brief_fr.startswith(llm.T["fr"]["brief_intro"])
+      and brief_fr.rstrip().endswith(llm.T["fr"]["brief_outro"]))
+check("same in english",
+      "A/B/C/D" not in llm.MockLLMClient().respond(
+          {"kind": "mission_start", "lang": "en", "mission_goal": "Go up.",
+           "mission_name": "basic/01", "mission_nb": "1",
+           "mission_meta": LEAKY, "hint_level": 1}))
+check("but the MODEL still gets intent_lang as grounding",
+      sent("chat", 1)["mission_meta"]["intent_lang"] == "But : le haut du donjon.")
+check("no goal text: the greet fallback may still use it",
+      "A/B/C/D" in llm.MockLLMClient().respond(
+          {"kind": "mission_start", "lang": "fr", "mission_goal": "",
+           "mission_name": "basic/01", "mission_nb": "1",
+           "mission_meta": LEAKY, "hint_level": 1}))
+
 print("== resolve_backend precedence ==")
 for var in ("GSH_TUTOR_LLM_BACKEND", "GSH_TUTOR_LLM_URL"):
     os.environ.pop(var, None)

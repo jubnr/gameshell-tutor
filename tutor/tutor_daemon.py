@@ -30,7 +30,8 @@ from bridge import SessionBridge                      # noqa: E402
 from engine import TutorEngine                        # noqa: E402
 from learner_model import LearnerModel                # noqa: E402
 from llm import (make_client, MockLLMClient, PERSONAS, T,  # noqa: E402
-                 GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES, strip_gm_echo)
+                 GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES,
+                 NARRATION_FORMAT, strip_gm_echo)
 from tutor_pane import load_config, wait_for_session, TUTOR_HOME, IDLE_SECONDS  # noqa: E402
 try:
     from rag import Retriever
@@ -432,7 +433,8 @@ def run(session_dir):
     narration_key = hashlib.sha1(json.dumps(
         [[T.get(lang, T["en"]).get(k, "")
           for k in ("brief_intro", "brief_outro", "greet", "greet_generic")],
-         GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES, MISSION_ART],
+         GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES, MISSION_ART,
+         NARRATION_FORMAT],
         ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:8]
     for stale in glob.glob(os.path.join(TUTOR_HOME, "goals-cache",
                                         "narration-*.txt")):

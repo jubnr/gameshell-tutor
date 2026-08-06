@@ -141,6 +141,13 @@ GM_COMMAND_MAP = (
 # their `gm fini` rename from GM_COMMAND_MAP.
 DROPPED_COMMAND_ENTRIES = ("gsh check",)
 
+# Bump when the SHAPE of a briefing changes (sections added or removed, order
+# altered). The narration cache fingerprint hashes the data that feeds a
+# briefing (templates, command map, art), which cannot notice a change in the
+# rendering code itself, so cached briefings would otherwise survive one.
+# 2: intent_lang no longer shown to the learner (it leaked the solution).
+NARRATION_FORMAT = 2
+
 
 def drop_command_entry(body, cmd):
     """Remove a `cmd` entry from a goal's command list: the line naming the
@@ -221,13 +228,16 @@ class MockLLMClient(LLMClient):
                 body = "\n".join(paged)
                 name = ctx.get("mission_name") \
                     or "mission %s" % ctx.get("mission_nb", "?")
-                intent_line = (meta.get("intent_lang") or {}).get(
-                    ctx.get("lang"), "")
+                # NOTE: mission_meta.intent_lang is deliberately NOT shown to
+                # the learner. It is tutor-facing metadata, written to ground
+                # the model, and 27 of the 44 entries name the exact path or
+                # command: mission 1's reads "(Chateau/Donjon/Premier_etage/
+                # Deuxieme_etage/Haut_du_donjon)", which is the entire answer
+                # to a mission whose point is to find that route with `ls`.
+                # The goal text above is the engine's own parchment and states
+                # the objective in full, withholding the route on purpose.
                 parts = [t["brief_intro"].format(name=name), "", body, "",
-                         "\x06"]
-                if intent_line:
-                    parts += [intent_line, ""]
-                parts.append(t["brief_outro"])
+                         "\x06", t["brief_outro"]]
                 return "\n".join(parts)
             if meta.get("intent"):
                 return t["greet"].format(
