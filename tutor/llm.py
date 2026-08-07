@@ -431,9 +431,11 @@ Mission success is detected automatically by the game — never claim a mission
 passed or failed yourself (the context `kind` carries the verdict), and never
 tell the learner to run `gsh check`, `gsh goal` or any other `gsh` command.
 Your replies are plain prose: never begin a reply with "gm" and never write
-`gm ...` lines — `gm` is what the LEARNER types to reach you. The only things
-you may point them to are `gm` (ask a question), `gm indice` (a hint),
-`gm mission` (re-hear the quest).
+`gm ...` lines — `gm` is what the LEARNER types to reach you. Never repeat the
+learner's own question back as a command (`gm ou suis-je ?` after they asked
+"ou suis-je ?" quotes them at themselves): answer the dialogue, do not
+continue it. The only things you may point them to are `gm` (ask a question),
+`gm indice` (a hint), `gm mission` (re-hear the quest).
 
 CONTEXT: the user message is one JSON object — cmd/exit/cwd/output/snapshot
 (what the shell really did; `output` null means nothing was captured),
@@ -463,7 +465,32 @@ OLLAMA_DEFAULT_BASE = "http://localhost:11434"
 OLLAMA_DEFAULT_MODEL = "shell-tutor"
 
 
-GM_ECHO = re.compile(r"^\s*[`*]*\s*gm\s*[`*]*\s*[.:;!?]*\s*$", re.I)
+# A whole line that is nothing but a `gm ...` invocation. The argument is
+# captured so a real suggestion (`gm indice`) can be told apart from the model
+# reading the learner's own question back to them (`gm où suis-je ?`).
+GM_ECHO = re.compile(
+    r"^\s*[`*_]*\s*(?:gm|maitre|maître)\b(?P<arg>[^`*]*)[`*_]*\s*[.:;!?]*\s*$",
+    re.I)
+
+# The Game Master's real vocabulary (shim: the `gm` dispatcher). A line naming
+# one of these is guidance and stays; anything else after `gm` is prose.
+GM_SUBCOMMANDS = {
+    "indice", "hint", "mission", "epreuve", "épreuve", "but", "goal",
+    "fini", "valide", "check", "reset", "index", "sommaire", "goto", "aller",
+    "parchemin", "brut", "raw", "persona", "commandes", "commands", "aide",
+    "quitter", "quitte", "exit", "pars",
+}
+
+
+def _is_gm_echo(line):
+    m = GM_ECHO.match(line)
+    if not m:
+        return False
+    arg = m.group("arg").strip(" \t`*_.:;!?")
+    if not arg:
+        return True                     # a bare `gm`
+    first = arg.split()[0].strip(".,:;!?").lower()
+    return first not in GM_SUBCOMMANDS
 
 
 def serve_hint(t, meta, hints, level):
@@ -511,18 +538,26 @@ def did_it_the_long_way(meta, run, lang):
 
 
 def strip_gm_echo(text):
-    """Drop lines that are nothing but a bare `gm`.
+    """Drop lines that are nothing but a `gm ...` invocation.
 
     The baked prompt has to name `gm` repeatedly (it is how the learner
-    speaks to the Game Master), which primes the token hard. When the model
-    reaches for a command example but the hint level forbids giving one, it
-    emits the primed token alone — "Commencez par vous rendre au jardin :"
-    followed by a lone ``gm``, a command placeholder that means nothing to
-    the learner. The prompt already forbids it; a 7B model obeys that only
-    most of the time, so this is the deterministic backstop."""
+    speaks to the Game Master), which primes the token hard. Two failure
+    modes follow, both deterministic backstops for what the prompt already
+    forbids but a 7B model obeys only most of the time:
+
+    - a lone ``gm``: the model reaches for a command example, the hint level
+      forbids giving one, and it emits the primed token by itself — a
+      placeholder that means nothing to the learner;
+    - the learner's own words read back as a command, e.g. a reply that
+      contains ``gm ou suis-je ?`` after they asked "ou suis-je ?". The model
+      is completing the dialogue it was shown rather than answering it, and
+      the learner sees their own question quoted at them as if it were an
+      instruction.
+
+    A line naming a real subcommand (``gm indice``) is guidance and stays."""
     if not text:
         return text
-    kept = [l for l in text.splitlines() if not GM_ECHO.match(l)]
+    kept = [l for l in text.splitlines() if not _is_gm_echo(l)]
     # collapse the blank line the removal may leave behind
     out = []
     for line in kept:

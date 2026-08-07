@@ -171,6 +171,17 @@ for keep in ("Tape `gm indice` si tu bloques.",
              "Des questions ? Tape `gm` (puis Entrée) et parle-moi.",
              "Utilise `gm mission` pour réentendre l'épreuve."):
     check("kept: %r" % keep[:34], llm.strip_gm_echo(keep) == keep)
+# The model completing the dialogue instead of answering it: it reads the
+# learner's own question back as if it were a command to run.
+for echo in ("`gm où est-ce que je me trouve ?`", "`gm où suis-je ?`",
+             "gm where am I?", "**gm what is a pipe**"):
+    check("echoed question dropped: %r" % echo[:30],
+          llm.strip_gm_echo("Vous êtes à la maison.\n%s\nOù allez-vous ?" % echo)
+          == "Vous êtes à la maison.\nOù allez-vous ?")
+for realcmd in ("`gm indice`", "`gm mission`", "gm fini"):
+    check("real subcommand kept on its own line: %r" % realcmd,
+          llm.strip_gm_echo("Essaie ceci :\n%s" % realcmd)
+          == "Essaie ceci :\n%s" % realcmd)
 check("trailing lone gm at end of reply dropped",
       llm.strip_gm_echo("Commence par le jardin.\n`gm`") == "Commence par le jardin.")
 check("empty/None safe",

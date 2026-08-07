@@ -33,8 +33,25 @@ sudo bash ollama/enable-igpu.sh [vulkan|rocm|--revert]
 There is no lint step, no package manager and no build system. `test/` files
 are plain scripts, not a framework: run them directly, they exit non-zero on
 failure (`replay.py` is an inspection tool, not a test — it prints a
-transcript and never writes into the session it reads). `test_llm_backends.py` is the closest thing to a unit suite and is
-where new LLM-boundary behaviour belongs.
+transcript and never writes into the session it reads).
+`test_llm_backends.py` owns the LLM boundary (redaction, briefings, backends,
+mock coverage); `test_engine_policy.py` owns policy (ladder, stuck detection,
+`concept_keys`, danger). New behaviour belongs in whichever of the two matches.
+
+## Hard environment requirements
+
+These are the things that break on a different machine, so check them before
+debugging anything else:
+
+- **bash 5.1+**: the shim assigns `PROMPT_COMMAND` as an ARRAY
+  (`shim/gshrc_tutor.sh`, near the bottom). On 5.0 and older that silently
+  becomes a string and the whole shim stops firing.
+- **python3 3.9+**: `rag.py` uses `str.removesuffix`.
+- **util-linux `script`**: `play.sh` runs `script -qf FILE -c CMD`. The BSD /
+  macOS `script` takes different arguments; without it there is no typescript
+  and the tutor sees no command output at all.
+- Everything else is coreutils. `numpy` is optional (RAG only, degrades to no
+  RAG), `tmux` only for `--pane`, `git` only to stamp `condition.json`.
 
 ## Architecture
 
@@ -44,6 +61,8 @@ Data flows one way, and the shell is always the authority:
 shim (bash)  ->  turns.jsonl / chat.jsonl  ->  SessionBridge  ->  TutorEngine
                                                                       |
 outbox/*.msg  <-  Outbox/StreamSink  <-  LLMClient (mock | http | ollama)
+     |                  |
+  shim prints        Journal -> tutor.jsonl   (what was said, and why)
 ```
 
 - `shim/gshrc_tutor.sh` runs **inside** the game. It records every command,
@@ -58,7 +77,11 @@ outbox/*.msg  <-  Outbox/StreamSink  <-  LLMClient (mock | http | ollama)
   config > `http` if a URL is set > `mock`.
 - `tutor/tutor_daemon.py` is the default frontend. It renders each utterance
   into one file under `$SESSION/outbox/` (written tmp-then-rename so the shim
-  only sees complete files) and signals the shell with SIGUSR1.
+  only sees complete files) and signals the shell with SIGUSR1. It also owns
+  the briefing cache, the `pending` lease, the read cursor and the `Journal`.
+- `tutor/learner_model.py` is the durable record of what the learner has
+  shown: `seen / used / mastered` per concept key, with a clean-run `streak`
+  (mastery is about the recent record, not a spotless lifetime one).
 - `tutor/tutor_pane.py` is the alternative tmux-pane frontend and also owns
   `load_config` / `TUTOR_HOME`, which the daemon imports.
 
@@ -74,6 +97,49 @@ all of it, which is how `subject.sh` isolates participants: each gets its own
 tutor home AND its own copy of the game, because GameShell keeps progress
 inside the archive and the learner model is keyed on the game's
 `$GSH_CONFIG/uid`.
+
+## The utterance contract
+
+`engine.build_context(kind, ...)` builds one dict per utterance; every `kind`
+must have a branch in `MockLLMClient.respond`, and `test_engine_policy.py` +
+`test_llm_backends.py` enforce that together.
+
+| kind | when |
+|---|---|
+| `mission_start` | mission changed (the daemon usually pre-empts this with its cached briefing) |
+| `error` | a command failed *and* `is_real_failure()` agrees it was a mistake |
+| `check_pass` / `check_fail` | the engine's verdict, read from `missions.log` |
+| `danger` | a command matched `DANGEROUS` and succeeded |
+| `idle` | no activity for `IDLE_SECONDS` |
+| `chat` | `gm <text>`; `message="hint request"` for `gm indice` |
+| `hint_capped` | a second hint request at a rung already served |
+| `interactive_check` | first few commands of a mission the shell cannot probe |
+
+`FastVerdictClient.FAST_KINDS` routes everything except free-text `chat` and
+`error` to the mock, whatever the configured backend — verdicts must land in
+the same prompt window, and a briefing must never be improvised. That means a
+remote model only ever sees two kinds; anything you add to `redact_context`
+for another kind is unreachable in the default setup.
+
+## Delivery markers
+
+The daemon puts invisible control characters in a message to direct the shim's
+printer. They must be stripped on **every** delivery path — the paced loop and
+the `GSH_TUTOR_PACE=0` fast path — or a learner sees raw control bytes.
+
+| char | meaning |
+|---|---|
+| `\x06` | page break: wait for a keypress before the next section |
+| `\x0e` | this line is scenery (ASCII art): draw it with no delay, and no paragraph pause after the block |
+
+## Environment variables
+
+`GSH_TUTOR_HOME` (all state), `GSH_TUTOR_LLM_BACKEND` / `_URL` / `_MODEL` /
+`_KEY`, `GSH_TUTOR_OLLAMA_HOST`, `GSH_TUTOR_EMBED_MODEL`, `GSH_TUTOR_PACE`
+(0 = no typewriter), `GSH_TUTOR_ART` (0 = no scenery), `GSH_TUTOR_PROBE_TIMEOUT`
+(seconds, default 2), `GSH_TUTOR_FRONTEND` (`pane`), `GSH_TUTOR_ROOT` (where
+the shim finds this repo), `GSH_TUTOR_SESSION` (set by `play.sh`),
+`GSH_SUBJECTS` (participant root).
 
 ## Invariants that are easy to break
 
