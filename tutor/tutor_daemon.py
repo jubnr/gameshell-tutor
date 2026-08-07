@@ -31,7 +31,8 @@ from engine import TutorEngine                        # noqa: E402
 from learner_model import LearnerModel                # noqa: E402
 from llm import (make_client, MockLLMClient, PERSONAS, T,  # noqa: E402
                  GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES,
-                 GOAL_SENTENCE_REWRITES, NARRATION_FORMAT, strip_gm_echo)
+                 GOAL_SENTENCE_REWRITES, GOAL_SENTENCE_REWRITES_AUTO,
+                 NARRATION_FORMAT, strip_gm_echo)
 from tutor_pane import load_config, wait_for_session, TUTOR_HOME, IDLE_SECONDS  # noqa: E402
 try:
     from rag import Retriever
@@ -138,6 +139,139 @@ MISSION_ART = {
 }
 
 
+# How long the shell should trust a `pending` marker before deciding the
+# daemon is wedged. Refreshed on every iteration that still has work, so a
+# slow LLM call keeps extending its own lease.
+PENDING_TTL = 15
+
+
+def mark_pending(path):
+    """Say "an answer is on its way" to the shell's prompt hook.
+
+    Carries the pid and a deadline: without them a daemon killed mid-iteration
+    left this file behind forever, and the shim then held EVERY prompt for its
+    full 12s cap, silently, for the rest of the session. Written tmp-then-
+    rename so the shim never reads a half-written line."""
+    tmp = path + ".tmp"
+    try:
+        with open(tmp, "w") as f:
+            f.write("%d %d\n" % (os.getpid(), int(time.time()) + PENDING_TTL))
+        os.rename(tmp, path)
+    except OSError:
+        pass
+
+
+CURSOR_VERSION = 1
+
+
+def load_cursor(session_dir):
+    """Where the previous daemon for this session had read up to.
+
+    `gm` respawns a dead daemon, and without this the new one re-read all of
+    turns.jsonl and chat.jsonl and re-emitted every briefing, every error
+    diagnosis and every chat answer of the session onto the next prompt."""
+    try:
+        with open(os.path.join(session_dir, "cursor.json")) as f:
+            c = json.load(f)
+        if c.get("v") != CURSOR_VERSION:
+            return 0, 0
+        return int(c.get("turns", 0)), int(c.get("chat", 0))
+    except (OSError, ValueError, TypeError):
+        return 0, 0
+
+
+def save_cursor(session_dir, turns, chat):
+    tmp = os.path.join(session_dir, "cursor.json.tmp")
+    try:
+        with open(tmp, "w") as f:
+            json.dump({"v": CURSOR_VERSION, "turns": turns, "chat": chat}, f)
+        os.rename(tmp, os.path.join(session_dir, "cursor.json"))
+    except OSError:
+        pass
+
+
+class Journal:
+    """One JSON line per thing the Game Master says, in $SESSION/tutor.jsonl.
+
+    Without it a session records only the learner's half: what the tutor said
+    survived as ANSI-coloured text inside the typescript, interleaved with
+    game output, with no kind, no hint level, no backend and no link to the
+    turn that provoked it. That makes "did the tutor help?" unanswerable from
+    a session directory, and it makes hint_level unrecoverable as a time
+    series (learner_model.json only ever holds its final value).
+    """
+
+    def __init__(self, session_dir):
+        self.path = os.path.join(session_dir, "tutor.jsonl")
+
+    def write(self, rec):
+        rec.setdefault("ts", int(time.time()))
+        try:
+            with open(self.path, "a") as f:
+                f.write(json.dumps(rec, ensure_ascii=False) + "\n")
+        except OSError:
+            pass
+
+    def drain(self, engine):
+        """Everything engine._say produced since the last drain."""
+        for rec in engine.spoken:
+            self.write(rec)
+        engine.spoken = []
+
+
+def write_condition(session_dir, cfg, lang, rag_on, tutor_root):
+    """What this session was actually run with.
+
+    session.json describes the game; nothing described the tutor. config.json
+    lives outside the session and can change between runs, so after the fact
+    there was no way to tell a mock session from an LLM one — which is the
+    first thing any comparison needs."""
+    rec = {"llm": cfg.get("llm"), "persona": cfg.get("persona"), "lang": lang,
+           "rag": bool(rag_on), "art": os.environ.get("GSH_TUTOR_ART") != "0",
+           "model": os.environ.get("GSH_TUTOR_LLM_MODEL", ""),
+           "started": int(time.time())}
+    try:
+        import subprocess
+        rec["tutor_rev"] = subprocess.run(
+            ["git", "-C", tutor_root, "rev-parse", "--short", "HEAD"],
+            capture_output=True, text=True, timeout=5).stdout.strip()
+    except Exception:
+        rec["tutor_rev"] = ""
+    try:
+        with open(os.path.join(session_dir, "condition.json"), "w") as f:
+            json.dump(rec, f, indent=1)
+    except OSError:
+        pass
+
+
+def load_no_probe():
+    """Missions the shell cannot probe for success (see scan_unsafe_checks in
+    install.sh). The engine tells the learner to submit those with `gm fini`,
+    and the briefing renderer keeps the check sentences instead of promising
+    an automatic victory that will never come."""
+    names = []
+    try:
+        with open(os.path.join(TUTOR_HOME, "no-probe.list")) as f:
+            names = [l.strip() for l in f if l.strip()]
+    except OSError:
+        pass
+    return names
+
+
+# Delivery directive, invisible like the \x06 page break: the shim prints a
+# marked line with no typewriter delay. Pacing is there to make the Game
+# Master sound like someone speaking; ASCII art is scenery, and dripping it
+# out a line at a time just looks like a slow terminal.
+INSTANT = "\x0e"
+
+
+def instant(block):
+    """Mark every line of a block for immediate, unpaced printing."""
+    if not block:
+        return block
+    return "\n".join(INSTANT + l for l in block.split("\n"))
+
+
 def mission_art(mission_name):
     """Art for a mission's family, or "" (unknown family, or art disabled)."""
     if os.environ.get("GSH_TUTOR_ART") == "0":
@@ -181,7 +315,18 @@ class Outbox:
     def __init__(self, session_dir):
         self.dir = os.path.join(session_dir, "outbox")
         os.makedirs(self.dir, exist_ok=True)
+        # Resume the numbering from what is already spooled. Filenames are
+        # the delivery order (the shim prints them lexicographically), so a
+        # respawned daemon restarting at 000001 would queue its messages
+        # BEFORE anything still undelivered, and could collide with it.
         self.n = 0
+        try:
+            for name in os.listdir(self.dir):
+                head = name[:6]
+                if head.isdigit():
+                    self.n = max(self.n, int(head))
+        except OSError:
+            pass
 
     def janitor(self):
         # the shell can't always unlink delivered files (the game wraps rm);
@@ -294,9 +439,14 @@ class StreamSink:
 
 
 class ChatTail:
-    def __init__(self, session_dir):
+    def __init__(self, session_dir, offset=0):
         self.path = os.path.join(session_dir, "chat.jsonl")
-        self._offset = 0
+        try:
+            if offset > os.path.getsize(self.path):
+                offset = 0
+        except OSError:
+            offset = 0
+        self._offset = offset
 
     def poll(self):
         msgs = []
@@ -323,13 +473,17 @@ class FastVerdictClient:
     check_pass critique is template-based when this routing is active.)"""
 
     FAST_KINDS = {"mission_start", "check_pass", "check_fail", "danger",
-                  "hint_capped", "idle"}
+                  "hint_capped", "idle", "interactive_check"}
 
     def __init__(self, slow):
         self.slow = slow
         self.fast = MockLLMClient()
+        # which client answered last — the journal records it, because the
+        # configured backend is NOT what most utterances actually used
+        self.last_route = "mock"
 
     def respond(self, ctx):
+        self.last_route = "mock"
         if ctx.get("kind") in self.FAST_KINDS:
             return self.fast.respond(ctx)
         if (ctx.get("kind") == "chat"
@@ -337,6 +491,7 @@ class FastVerdictClient:
             # gm indice: the graded per-mission hints are curated content —
             # deterministic, instant, never LLM-improvised
             return self.fast.respond(ctx)
+        self.last_route = getattr(self.slow, "name", "slow")
         return self.slow.respond(ctx)
 
 
@@ -357,16 +512,21 @@ def main():
     try:
         run(session_dir)
     finally:
-        try:
-            os.remove(os.path.join(session_dir, "daemon.pid"))
-        except OSError:
-            pass
+        # `pending` first: the shell must never see a live daemon.pid next to
+        # a marker nobody will ever clear -- that combination made every
+        # prompt wait for the full hold-back cap.
+        for name in ("pending", "daemon.pid"):
+            try:
+                os.remove(os.path.join(session_dir, name))
+            except OSError:
+                pass
 
 
 def run(session_dir):
     cfg = load_config()
     wait_for_session(session_dir)
-    bridge = SessionBridge(session_dir)
+    cur_turns, cur_chat = load_cursor(session_dir)
+    bridge = SessionBridge(session_dir, offset=cur_turns)
     sess = bridge.session
     lang = (sess.get("lang") or "en")[:2]
     tutor_root = os.path.dirname(os.path.abspath(__file__))
@@ -396,12 +556,22 @@ def run(session_dir):
         bridge, learner, FastVerdictClient(slow_client),
         meta_dir=os.path.join(tutor_root, "missions_meta"),
         goals_cache=os.path.join(TUTOR_HOME, "goals-cache"),
-        lang=lang, persona=cfg["persona"])
+        lang=lang, persona=cfg["persona"],
+        no_probe=load_no_probe())
     outbox = outbox_early
-    chat = ChatTail(session_dir)
+    journal = Journal(session_dir)
+    chat = ChatTail(session_dir, offset=cur_chat)
+    if cur_turns or cur_chat:
+        # resuming a session a previous daemon was already handling: adopt
+        # the mission it had reached, or the first live turn would look like
+        # a mission change and re-brief a mission already told.
+        starts = [nb for nb, act in bridge.mission_log() if act == "START"]
+        if starts:
+            engine.current_mission = starts[-1]
     retriever = Retriever() if Retriever else None
     use_rag = bool(retriever and retriever.ok and cfg["llm"] != "mock")
     print("rag index: %s" % ("ready" if use_rag else "off"), flush=True)
+    write_condition(session_dir, cfg, lang, use_rag, tutor_root)
 
     def recall(query):
         """Ground the LLM with local man pages / mission texts; never fatal."""
@@ -434,7 +604,12 @@ def run(session_dir):
         [[T.get(lang, T["en"]).get(k, "")
           for k in ("brief_intro", "brief_outro", "greet", "greet_generic")],
          GM_COMMAND_MAP, DROPPED_COMMAND_ENTRIES, MISSION_ART,
-         GOAL_SENTENCE_REWRITES, NARRATION_FORMAT],
+         GOAL_SENTENCE_REWRITES, GOAL_SENTENCE_REWRITES_AUTO,
+         NARRATION_FORMAT,
+         # mission_art() is silenced by GSH_TUTOR_ART=0, which the renderer
+         # honours but the key did not: an artless briefing was cached once
+         # and then served to every art-enabled session afterwards.
+         os.environ.get("GSH_TUTOR_ART") == "0"],
         ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:8]
     for stale in glob.glob(os.path.join(TUTOR_HOME, "goals-cache",
                                         "narration-*.txt")):
@@ -473,7 +648,7 @@ def run(session_dir):
         # the chapter's art heads the briefing, before the page-break pauses
         art = mission_art(name)
         if text and art:
-            text = art + "\n\n" + text
+            text = instant(art) + "\n\n" + text
         if text:
             try:
                 os.makedirs(os.path.dirname(cache), exist_ok=True)
@@ -486,6 +661,12 @@ def run(session_dir):
     last_activity = time.time()
     idle_nudged = False
     pending_path = os.path.join(session_dir, "pending")
+    # A predecessor killed mid-iteration leaves this behind; clear it before
+    # the shell can see a live daemon.pid next to a dead daemon's marker.
+    try:
+        os.remove(pending_path)
+    except OSError:
+        pass
     while game_alive(sess):
         posted_before = outbox.n
         turns = bridge.poll()
@@ -493,7 +674,7 @@ def run(session_dir):
         if turns or chats:
             # tell the shell "an answer is being prepared": its prompt hook
             # waits on this marker instead of releasing the prompt too early
-            open(pending_path, "w").close()
+            mark_pending(pending_path)
         for kind, payload in turns:
             last_activity, idle_nudged = time.time(), False
             if kind == "session_start":
@@ -503,8 +684,10 @@ def run(session_dir):
                 if nb and nb != engine.current_mission:
                     engine.current_mission = nb
                     engine.mission_commands = []
-                    outbox.post(GM_ART.strip("\n") + "\n\n"
+                    outbox.post(instant(GM_ART.strip("\n")) + "\n\n"
                                 + (narration(nb) or ""), lang)
+                    journal.write({"kind": "briefing", "mission_nb": nb,
+                                   "backend": "template"})
                 continue
             if kind != "turn":
                 continue
@@ -515,6 +698,9 @@ def run(session_dir):
                 engine.current_mission = payload.mission
                 engine.mission_commands = []
                 outbox.post(narration(payload.mission) or "", lang)
+                journal.write({"kind": "briefing",
+                               "mission_nb": payload.mission,
+                               "backend": "template"})
             # first discovery of a place: one line of ambience
             place = os.path.basename(payload.cwd or "")
             if place in AMBIANCE:
@@ -524,6 +710,9 @@ def run(session_dir):
                     learner.save()
                     outbox.post("✨ " + AMBIANCE[place].get(
                         lang, AMBIANCE[place]["en"]), lang)
+                    journal.write({"kind": "ambience", "place": place,
+                                   "mission_nb": payload.mission,
+                                   "backend": "template"})
 
             is_check = (payload.cmd or "").startswith("gsh check")
             # attribute delayed coaching to the command it concerns — but
@@ -534,7 +723,9 @@ def run(session_dir):
                 recall("%s : %s" % (payload.cmd,
                                     (payload.output or "").splitlines()[0]
                                     if payload.output else ""))
-            for utterance in engine.on_turn(payload):
+            spoken = engine.on_turn(payload)
+            journal.drain(engine)
+            for utterance in spoken:
                 if sink.take(utterance):
                     continue   # already on screen, streamed live
                 outbox.post(utterance, lang, ref_cmd=ref)
@@ -548,11 +739,16 @@ def run(session_dir):
                     engine.current_mission = starts[-1]
                     engine.mission_commands = []
                     outbox.post(narration(starts[-1]) or "", lang)
+                    journal.write({"kind": "briefing",
+                                   "mission_nb": starts[-1],
+                                   "backend": "template"})
 
         for ev in chats:
             last_activity, idle_nudged = time.time(), False
             if ev.get("event") == "goal":
                 nb = str(ev.get("mission") or engine.current_mission or "")
+                journal.write({"kind": "goal_reread", "mission_nb": nb,
+                               "backend": "template"})
                 outbox.post(narration(nb, quick=True) or "…", lang,
                             reply_id=ev.get("id"))
                 continue
@@ -569,6 +765,7 @@ def run(session_dir):
             else:
                 recall(msg)
                 reply = engine.on_chat(msg)
+                journal.drain(engine)
             if reply and sink.take(reply):
                 outbox.post_marker(ev.get("id"))   # streamed live: just unblock gm
             else:
@@ -578,6 +775,7 @@ def run(session_dir):
                 and engine.current_mission):
             idle_nudged = True
             outbox.post(engine.on_idle() or "", lang)
+            journal.drain(engine)
 
         engine.knowledge = None
         if turns or chats:
@@ -585,11 +783,24 @@ def run(session_dir):
                 os.remove(pending_path)
             except OSError:
                 pass
+            # everything read this iteration has now been answered: a daemon
+            # respawned after this point resumes here instead of replaying
+            save_cursor(session_dir, bridge._offset, chat._offset)
         if outbox.n != posted_before:
             push()
         time.sleep(0.4)
 
     learner.save()
+    # the game tree is about to be deleted (or already is): keep the
+    # progression files so the session can still be read afterwards
+    bridge.snapshot_progress()
+    # the probes' TMPDIR (see _tutor_probe): checks leave mktemp files there,
+    # and it exists only to keep them OUT of the game tree
+    try:
+        import shutil
+        shutil.rmtree(os.path.join(session_dir, "probe-tmp"), ignore_errors=True)
+    except Exception:
+        pass
 
 
 if __name__ == "__main__":

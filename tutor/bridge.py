@@ -47,12 +47,20 @@ def clean_output(raw: bytes) -> str:
 class SessionBridge:
     """Tails turns.jsonl and the typescript of one game session."""
 
-    def __init__(self, session_dir):
+    def __init__(self, session_dir, offset=0):
         self.dir = session_dir
         self.turns_path = os.path.join(session_dir, "turns.jsonl")
         self.typescript_path = os.path.join(session_dir, "typescript")
         self.session = {}
-        self._offset = 0
+        # A respawned daemon resumes here instead of at 0: turns.jsonl is
+        # append-only, so a byte offset is a valid cursor. Starting at 0 made
+        # every restart re-emit the whole session's briefings and diagnoses.
+        try:
+            if offset > os.path.getsize(self.turns_path):
+                offset = 0          # truncated/rotated: distrust the cursor
+        except OSError:
+            offset = 0
+        self._offset = offset
         self._open_turns = {}
         sess_file = os.path.join(session_dir, "session.json")
         if os.path.exists(sess_file):
@@ -108,9 +116,34 @@ class SessionBridge:
         return events
 
     # -- game progression (read-only, from the engine's own files) ----------
+    def _progress_file(self, name):
+        """The engine's own file if the game is still alive, else the copy
+        this session kept. GameShell deletes the extracted tree on exit
+        (lib/header.sh:_remove_root), so after a session both missions.log
+        and index.idx are gone -- and every post-hoc replay ran with
+        mission_name = None throughout, silently loading no metadata."""
+        live = os.path.join(self.session.get("gsh_config", ""), name)
+        if os.path.exists(live):
+            return live
+        return os.path.join(self.dir, "progress", name)
+
+    def snapshot_progress(self):
+        """Copy the engine's progression files into the session directory, so
+        the session stays readable once the game tree is gone."""
+        dest = os.path.join(self.dir, "progress")
+        try:
+            os.makedirs(dest, exist_ok=True)
+            for name in ("missions.log", "index.idx"):
+                live = os.path.join(self.session.get("gsh_config", ""), name)
+                if os.path.exists(live):
+                    with open(live) as src, open(os.path.join(dest, name), "w") as dst:
+                        dst.write(src.read())
+        except OSError:
+            pass
+
     def mission_log(self):
         """[(mission_nb, action)] from the engine's missions.log (source of truth)."""
-        path = os.path.join(self.session.get("gsh_config", ""), "missions.log")
+        path = self._progress_file("missions.log")
         entries = []
         try:
             with open(path) as f:
@@ -124,7 +157,7 @@ class SessionBridge:
 
     def mission_name(self, nb):
         """Map mission number -> mission dir name via the engine's index.idx."""
-        path = os.path.join(self.session.get("gsh_config", ""), "index.idx")
+        path = self._progress_file("index.idx")
         try:
             with open(path) as f:
                 names = [l.strip() for l in f

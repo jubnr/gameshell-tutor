@@ -217,11 +217,13 @@ questgen/questgen.py --example --out /tmp/quest          # offline
 
 ```sh
 python3 test/test_llm_backends.py            # LLM wiring, fake local server
+python3 test/test_engine_policy.py           # hint ladder, stuck detection
 python3 test/replay.py <session-dir>         # replay a session on the mock
 ```
 
-Both are plain scripts and exit non-zero on failure, so they slot into any
-runner you like.
+The first two are plain scripts and exit non-zero on failure, so they slot
+into any runner you like. `replay.py` is an inspection tool, not a test: it
+prints a transcript and is strictly read-only on the session directory.
 
 **Side panel** (the older layout): `./play.sh --pane` opens a tmux split with
 the tutor on the right, using `/hint` and `/persona`.

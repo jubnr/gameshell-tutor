@@ -50,9 +50,16 @@ make_noop_bin() {
   #     find ... -print0 | xargs -0 rm -f
   # and xargs execs `rm` itself, so the stub has to win on PATH, not in the
   # shell. `find` stays real, since checks legitimately use it to look around.
+  # `kill` is stubbed too: intermediate/04_bg_xeyes ends both of its failure
+  # branches with `ps -e | awk '/xeyes/ {print $1}' | xargs kill -9`, which
+  # killed the very process the mission asks the learner to keep running.
+  # xargs execs the binary, so the PATH stub catches that form; the shim also
+  # defines a kill() function inside the probe, because `kill` is a builtin
+  # too and a direct `kill -9 $pid` would never reach PATH.
   local dir="$TUTOR_HOME/noop-bin" c
   mkdir -p "$dir"
-  for c in rm rmdir mv cp truncate shred dd; do
+  for c in rm rmdir mv cp truncate shred dd kill pkill killall \
+           chmod chown chgrp ln mkdir touch install; do
     printf '#!/bin/sh\n# no-op stub: see make_noop_bin in install.sh\nexit 0\n' \
       > "$dir/$c"
     chmod +x "$dir/$c"
@@ -72,40 +79,56 @@ scan_unsafe_checks() {
   # (the engine's own source even says "#FIXME: use clean.sh"), so probing it
   # after every command deleted the three coins the mission is about.
   #
-  # In every such check the cleanup sits on the FAILURE path, after the verdict
-  # is already decided, so the probe can keep its answer while losing its bite:
-  # the shim runs these with noop-bin first on PATH. Auto-detection therefore
-  # still works everywhere. Only the listed missions pay the stubbing, so the
-  # other checks keep deleting their own mktemp files as they should.
-  local missions="$1/missions" out="$TUTOR_HOME/sandbox-check.list" n=0
+  # This used to be a blacklist: only the checks a grep flagged as destructive
+  # ran with no-op stubs on PATH. A blacklist over hand-written shell always
+  # has a hole, and it had two big ones -- intermediate/04_bg_xeyes ends both
+  # failure branches with `ps -e | awk … | xargs kill -9` (it killed the very
+  # process the mission asks the learner to keep running), and
+  # intermediate/05_background does `rm -f "$PIDS"` at the TOP of the check,
+  # before any verdict. Neither mentions GSH_HOME, which the old rule required.
+  #
+  # The costs are wildly asymmetric: stubbing a harmless check leaks a temp
+  # file, missing a harmful one destroys the learner's work. So we no longer
+  # decide -- EVERY probe now runs sandboxed (see _tutor_probe in the shim).
+  # The only thing that made blanket sandboxing expensive was the game's
+  # `mktemp`, which writes inside the game tree and would get repacked into
+  # every autosave; the shim points TMPDIR at the session directory instead.
+  #
+  # What still needs a list is the checks that must not be probed AT ALL.
+  local missions="$1/missions" out="$TUTOR_HOME/no-probe.list" n=0
   [ -d "$missions" ] || return 0
   mkdir -p "$TUTOR_HOME"
   : > "$out"
-  local f name
+  local f name why
   while IFS= read -r f; do
-    grep -nE '(rm|rmdir|mv|cp|truncate)[[:space:]]|-delete' "$f" 2>/dev/null \
-      | grep -vE '^[0-9]+:[[:space:]]*#' \
-      | grep -qE 'GSH_HOME|GSH_CHEST' || continue
+    why=""
+    # (a) Checks that ASK the learner something ("What is the secret key?").
+    # They `read` from stdin, so the stdin-closed probe can never pass them --
+    # and permissions/03 does it in a `while true` loop, where read-at-EOF
+    # spins forever. The answer only exists in the learner's head: the Game
+    # Master nudges them toward `gm fini` instead.
+    if grep -qE '(^|[;&|`$(]|[[:space:]])read[[:space:]]+(-[A-Za-z]+[[:space:]]+)*[A-Za-z_]' \
+         "$f" 2>/dev/null; then
+      why="interactive"
+    # (b) Checks that wait. processes/03_pstree_kill busy-waits on a file with
+    # no timeout of its own (`while ! [ -e "$GSH_TMP/snowflakes.list" ]`), and
+    # the probe runs from PROMPT_COMMAND -- it hung the prompt outright.
+    # intermediate/05_background sleeps 2s unconditionally, which would tax
+    # every prompt. The shim's watchdog is the backstop; this is the cure.
+    elif grep -vE '^[[:space:]]*#' "$f" 2>/dev/null \
+         | grep -qE '(^|[[:space:]])(until|while[[:space:]]+!?[[:space:]]*\[)|[[:space:]]sleep[[:space:]]+[1-9]'; then
+      why="slow"
+    else
+      continue
+    fi
     name=$(dirname "$f"); name=${name#"$missions"/}
     printf '%s\n' "$name" >> "$out"
     n=$((n+1))
+    [ -n "$VERBOSE" ] && echo "    no-probe ($why): $name"
   done < <(find "$missions" -name check.sh 2>/dev/null | sort)
-  echo "  $n mission(s) probed with writes neutralised -> $out"
-
-  # Checks that ASK the learner something ("What is the secret key?"): they
-  # `read` from stdin, so the silent probe (stdin closed) can never pass them.
-  # The shim launches these for real instead, so the learner never has to know
-  # a command to submit an answer.
-  local iout="$TUTOR_HOME/interactive-check.list" m=0
-  : > "$iout"
-  while IFS= read -r f; do
-    grep -qE '(^|[;&|`$(]|[[:space:]])read[[:space:]]+(-[A-Za-z]+[[:space:]]+)*[A-Za-z_]' \
-      "$f" 2>/dev/null || continue
-    name=$(dirname "$f"); name=${name#"$missions"/}
-    printf '%s\n' "$name" >> "$iout"
-    m=$((m+1))
-  done < <(find "$missions" -name check.sh 2>/dev/null | sort)
-  echo "  $m mission(s) with an interactive check -> $iout"
+  echo "  $n mission(s) never probed (learner submits with \`gm fini\`) -> $out"
+  # every probe is sandboxed now: an old list would only mislead
+  rm -f "$TUTOR_HOME/sandbox-check.list" "$TUTOR_HOME/interactive-check.list"
   # a stale no-autocheck.list from an older install would still disable them
   rm -f "$TUTOR_HOME/no-autocheck.list"
 }

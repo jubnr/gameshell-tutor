@@ -45,6 +45,10 @@ T = {
         "greet_generic": "[mission {nb}] Une nouvelle épreuve t'attend, aventurier·ère — demande-la moi avec `gm mission` et explore avec `ls`.",
         "brief_intro": "⚔ Approche, aventurier·ère — voici ta nouvelle épreuve :",
         "brief_outro": "Des questions ? Tape `gm` (puis Entrée) et parle-moi librement. J'annoncerai moi-même ta victoire dès que l'épreuve sera accomplie.",
+        # self-submit missions: the trial asks a question only the learner
+        # can answer, so the Game Master cannot see the victory coming.
+        "brief_outro_submit": "Des questions ? Tape `gm` (puis Entrée) et parle-moi librement. Cette épreuve-ci, je ne peux pas la juger de loin : quand tu tiens la réponse, dis-moi `gm fini` (ou `gm fini < fichier` s'il faut la lui donner par une redirection).",
+        "interactive_check": "Cette épreuve attend une réponse de ta part, et je ne peux pas la deviner à ta place. Quand tu penses la tenir, dis-moi `gm fini`.",
         "err_no_such_file": "Le shell répond : « {errline} ». Il ne trouve pas ce chemin depuis `{cwd}`. Que te montre `ls` ici ? Le fichier est-il vraiment là, sous ce nom exact ?",
         "err_permission": "« {errline} » — un problème de droits, pas d'existence. Regarde la colonne des permissions : que dit `ls -l` sur ce fichier ?",
         "err_not_found": "« {errline} » — le shell ne connaît pas cette commande. Vérifie l'orthographe. (Tape-la puis regarde ce que le shell répond, c'est lui qui a raison.)",
@@ -71,7 +75,9 @@ T = {
         "no_output": "(sortie non capturée pour ce tour — je ne peux pas la commenter; relance si besoin)",
         "chat_redirect": "Bonne question. Avant que je réponde : que te dit le dernier message du shell ? Décris-le moi.",
         "hint_capped": "Essaie encore un peu par toi-même, aventurier·ère — je monte d'un cran si tu bloques vraiment (ou après quelques essais).",
-        "danger": "⚠ Prudence : cette commande modifie/supprime des fichiers de façon irréversible. Vérifie d'abord la cible avec `ls` avant de l'exécuter.",
+        "danger": "⚠ Prudence : cette commande frappe large et ne se défait pas. Vérifie la cible avec `ls` avant, pas après.",
+        "danger_recover": "Si l'épreuve est devenue impossible, ne recrée rien à la main — les objets sont signés et seraient refusés : `gm reset` la remet en état.",
+        "one_way_only": "(C'est UNE route, pas la seule — l'épreuve en accepte d'autres.)",
         "mastered_skip": "",
         "llm_fallback": "[tuteur hors-ligne : le LLM distant n'a pas répondu, je continue en mode mock]",
     },
@@ -80,6 +86,8 @@ T = {
         "greet_generic": "[mission {nb}] A new trial awaits you, adventurer — ask me with `gm mission` and explore with `ls`.",
         "brief_intro": "⚔ Come closer, adventurer — here is your new trial:",
         "brief_outro": "Questions? Type `gm` (then Enter) and talk to me freely. I will proclaim your victory myself as soon as the trial is accomplished.",
+        "brief_outro_submit": "Questions? Type `gm` (then Enter) and talk to me freely. This trial I cannot judge from afar: when you have the answer, tell me `gm fini` (or `gm fini < file` if it must be fed in through a redirection).",
+        "interactive_check": "This trial waits for an answer from you, and I cannot guess it in your place. When you think you have it, tell me `gm fini`.",
         "err_no_such_file": "The shell says: \"{errline}\". It cannot find that path from `{cwd}`. What does `ls` show here? Is the file really there, under that exact name?",
         "err_permission": "\"{errline}\" — a permission problem, not a missing file. Look at the permission column: what does `ls -l` say about it?",
         "err_not_found": "\"{errline}\" — the shell does not know that command. Check the spelling. (The shell's answer is the truth.)",
@@ -103,7 +111,9 @@ T = {
         "no_output": "(output not captured for this turn — I cannot comment on it; run it again if needed)",
         "chat_redirect": "Good question. Before I answer: what does the shell's last message say? Describe it to me.",
         "hint_capped": "Try a little more on your own — I will step up the help if you are genuinely stuck (or after a few attempts).",
-        "danger": "⚠ Careful: this command modifies/deletes files irreversibly. Check the target with `ls` before running it.",
+        "danger": "⚠ Careful: that command casts a wide net and cannot be undone. Check the target with `ls` before, not after.",
+        "danger_recover": "If the trial has become impossible, do not rebuild anything by hand — the props are signed and would be rejected: `gm reset` restores it.",
+        "one_way_only": "(That is ONE route, not the only one — the trial accepts others.)",
         "mastered_skip": "",
         "llm_fallback": "[tutor offline: remote LLM did not answer, continuing on the mock]",
     },
@@ -135,20 +145,33 @@ GM_COMMAND_MAP = (
 # the learner "run this to see whether you succeeded" right after promising
 # "I will proclaim your victory myself" reads as a contradiction.
 #
-# ONLY the definition entry goes. `gsh check` also appears inline in the prose
-# of three missions where running it is genuinely part of the task (it starts
-# the stdin missions, and submits the answer in cal_nostradamus); those keep
-# their `gm fini` rename from GM_COMMAND_MAP.
+# ONLY the definition entry goes, and ONLY on missions the tutor can actually
+# detect. On a self-submit mission (see `self_submit` in the context) the
+# learner genuinely needs the command, so the entry stays and is renamed to
+# `gm fini` by GM_COMMAND_MAP like any other mention.
 DROPPED_COMMAND_ENTRIES = ("gsh check",)
 
-# Sentences that ORDER the learner to run the check. The Game Master now
-# launches interactive checks himself (shim: interactive-check.list), so these
-# would send the learner hunting for a command they never need. Applied before
-# GM_COMMAND_MAP, which would otherwise turn them into `gm fini`.
-# Only imperatives are rewritten; descriptive references such as the pipe
-# missions' "your last command before the check must ..." still mean something
-# and are left alone.
+# Descriptive references to the check: drop the command name, keep the
+# meaning. The pipe missions constrain the last command before the check,
+# which holds however the check is triggered. Applied to every briefing.
 GOAL_SENTENCE_REWRITES = (
+    ("avant ``gsh check`` ", ""),
+    ("prior to ``gsh check`` ", ""),
+    ("commande ``gsh check``.", "vérification."),
+    ("when you call the ``gsh check`` command", "at the moment of the check"),
+)
+
+# Sentences that ORDER the learner to run the check. On a mission the tutor
+# detects by itself these would send the learner hunting for a command they
+# never need, so they are rewritten to the promise the tutor actually keeps.
+#
+# They are applied ONLY to auto-detected missions. On a self-submit mission
+# the original sentence is the truth and must survive (with `gsh check`
+# renamed to `gm fini`): promising "I will ask you for it myself" on a mission
+# where nothing will ever ask is worse than naming the command. Two of these
+# missions -- stdin_stdout_stderr/02 and /05 -- also need the redirection the
+# sentence describes, which the old rewrite deleted outright.
+GOAL_SENTENCE_REWRITES_AUTO = (
     ("Lancez la commande ``gsh check`` pour commencer.",
      "Je lance l'épreuve dès que tu auras tapé une commande."),
     ("Run the command ``gsh check`` to start.",
@@ -157,14 +180,6 @@ GOAL_SENTENCE_REWRITES = (
      "Quand tu le sauras, je te poserai la question moi-même."),
     ("When you have it, run the command ``gsh check``.",
      "When you have it, I will ask you for it myself."),
-    # descriptive references: drop the command name, keep the meaning. The
-    # pipe missions constrain the last command before the check, which still
-    # holds now the check runs by itself. Order matters, the full sentences
-    # above are rewritten first so these fragments cannot match inside them.
-    ("avant ``gsh check`` ", ""),
-    ("prior to ``gsh check`` ", ""),
-    ("commande ``gsh check``.", "vérification."),
-    ("when you call the ``gsh check`` command", "at the moment of the check"),
 )
 
 # Bump when the SHAPE of a briefing changes (sections added or removed, order
@@ -173,7 +188,9 @@ GOAL_SENTENCE_REWRITES = (
 # rendering code itself, so cached briefings would otherwise survive one.
 # 2: intent_lang no longer shown to the learner (it leaked the solution).
 # 3: sentences ordering the learner to run the check are rewritten.
-NARRATION_FORMAT = 3
+# 4: self-submit missions keep the check sentences and get their own outro.
+# 5: chapter art is marked for instant (unpaced) printing.
+NARRATION_FORMAT = 5
 
 
 def drop_command_entry(body, cmd):
@@ -218,6 +235,9 @@ class LLMClient:
 class MockLLMClient(LLMClient):
     """Deterministic, offline, rule-based tutor voice (socratic persona)."""
 
+    name = "mock"        # recorded in tutor.jsonl, so a session says which
+                         # backend actually produced each utterance
+
     def respond(self, ctx):
         t = T.get(ctx.get("lang", "en"), T["en"])
         kind = ctx["kind"]
@@ -247,8 +267,16 @@ class MockLLMClient(LLMClient):
                 body = re.sub(r"``([^`]*?)``",
                               lambda m: "``%s``" % " ".join(m.group(1).split()),
                               body, flags=re.S)
-                for cmd in DROPPED_COMMAND_ENTRIES:
-                    body = drop_command_entry(body, cmd)
+                # A self-submit mission is one the tutor cannot detect (its
+                # check asks the learner a question, or waits): there the
+                # learner really does need `gm fini`, so the command entry
+                # stays and the imperative sentences keep their meaning.
+                self_submit = bool(ctx.get("self_submit"))
+                if not self_submit:
+                    for cmd in DROPPED_COMMAND_ENTRIES:
+                        body = drop_command_entry(body, cmd)
+                    for phrase, replacement in GOAL_SENTENCE_REWRITES_AUTO:
+                        body = body.replace(phrase, replacement)
                 for phrase, replacement in GOAL_SENTENCE_REWRITES:
                     body = body.replace(phrase, replacement)
                 for old, new in GM_COMMAND_MAP:
@@ -273,32 +301,49 @@ class MockLLMClient(LLMClient):
                 # to a mission whose point is to find that route with `ls`.
                 # The goal text above is the engine's own parchment and states
                 # the objective in full, withholding the route on purpose.
+                outro = t["brief_outro_submit"] if self_submit \
+                    else t["brief_outro"]
                 parts = [t["brief_intro"].format(name=name), "", body, "",
-                         "\x06", t["brief_outro"]]
+                         "\x06", outro]
                 return "\n".join(parts)
-            if meta.get("intent"):
-                return t["greet"].format(
-                    name=ctx.get("mission_name", "?"),
-                    intent_line=meta["intent_lang"].get(ctx.get("lang"), ""))
+            # No goal text (goals-cache missing or stale). This used to fall
+            # back to `greet` with intent_lang spliced in -- the exact leak the
+            # briefing path above goes to such lengths to avoid, reached by
+            # every fresh machine, and handing mission 1 its full answer.
+            # There is nothing safe to say about the mission here, so say
+            # nothing about it.
             return t["greet_generic"].format(nb=ctx.get("mission_nb", "?"))
 
         if kind == "error":
-            # graded ladder: mission-specific hints (from meta) override the
-            # generic socratic templates from level 2 upward
+            # Graded ladder ON TOP OF the diagnosis, never instead of it.
+            # The hint used to REPLACE the reading of the shell's message from
+            # level 2 up, so the learner stopped being told what the error
+            # meant exactly when they were struggling most — and got the same
+            # static rung whether the shell said "Permission denied" or
+            # "command not found". Diagnose first, then hint.
             hints = (meta.get("hints") or {}).get(ctx.get("lang")) \
                 or (meta.get("hints") or {}).get("en") or []
-            if level >= 2 and len(hints) >= level - 1:
-                return hints[level - 2]
             key = ERROR_TEMPLATES.get(ctx.get("error_class"), "err_generic")
             errline = first_error_line(ctx.get("output"))
             if not errline and ctx.get("output") is None:
-                return t["no_output"]
-            return t[key].format(errline=errline, cwd=ctx.get("cwd", "?"),
-                                 exit=ctx.get("exit"))
+                diagnosis = t["no_output"]
+            else:
+                diagnosis = t[key].format(errline=errline,
+                                          cwd=ctx.get("cwd", "?"),
+                                          exit=ctx.get("exit"))
+            rung = serve_hint(t, meta, hints, level)
+            return diagnosis + "\n" + rung if rung else diagnosis
 
         if kind == "check_fail":
-            return t["check_fail"].format(
+            # same rule as `error`: the verdict, then whatever rung is earned
+            out = t["check_fail"].format(
                 output=first_error_line(ctx.get("output")) or "(no message)")
+            hints = (meta.get("hints") or {}).get(ctx.get("lang")) \
+                or (meta.get("hints") or {}).get("en") or []
+            rung = serve_hint(t, meta, hints, level)
+            if rung:
+                out += "\n" + rung
+            return out
 
         if kind == "check_pass":
             # The Game Master says a word of his own on every victory. It is
@@ -328,22 +373,30 @@ class MockLLMClient(LLMClient):
                     cmds=", ".join("`%s`" % c for c in earned[:3])))
 
             review = meta.get("idiom_review", {}).get(ctx.get("lang")) if meta else None
-            if review:
-                # only offer the pro version if the learner's real commands
-                # match the "naive pattern" this mission's meta describes
-                pattern = meta.get("idiom_trigger", "")
-                if not pattern or pattern in " ; ".join(run):
-                    parts.append(review)
+            if review and did_it_the_long_way(meta, run, ctx.get("lang")):
+                parts.append(review)
             return "\n".join(parts).strip()
 
         if kind == "danger":
-            return t["danger"]
+            # Say the generic caution, then this mission's own note (18 of
+            # them are authored and none had ever been shown), then the only
+            # real recovery: the props are signed with sign_file, so
+            # re-creating them by hand fails check_file. `gm reset` is it.
+            parts = [t["danger"]]
+            note = meta.get("danger_note")
+            if note:
+                parts.append(note)
+            parts.append(t["danger_recover"])
+            return "\n".join(parts)
 
         if kind == "idle":
             return t["idle"]
 
         if kind == "hint_capped":
             return t["hint_capped"]
+
+        if kind == "interactive_check":
+            return t["interactive_check"]
 
         if kind == "chat":
             msg = (ctx.get("message") or "").lower()
@@ -352,13 +405,12 @@ class MockLLMClient(LLMClient):
             if msg == "hint request" and hints:
                 # an explicit hint request serves the current rung of the
                 # mission's curated ladder (concept at levels 1-2)
-                return hints[min(max(level - 2, 0), len(hints) - 1)]
+                return serve_hint(t, meta, hints, max(level, 2))
             if any(w in msg for w in ("what does", "que fait", "qu'est-ce que",
                                       "c'est quoi", "output", "affiche")):
                 return t["run_and_see"]
-            if level >= 2 and len(hints) >= level - 1:
-                return hints[level - 2]
-            return t["chat_redirect"]
+            rung = serve_hint(t, meta, hints, level)
+            return rung or t["chat_redirect"]
 
         return None
 
@@ -412,6 +464,50 @@ OLLAMA_DEFAULT_MODEL = "shell-tutor"
 
 
 GM_ECHO = re.compile(r"^\s*[`*]*\s*gm\s*[`*]*\s*[.:;!?]*\s*$", re.I)
+
+
+def serve_hint(t, meta, hints, level):
+    """The rung earned at `level`, or "" — with the caveat some missions
+    authored. `open_solution` marks a mission whose check accepts several
+    routes; presenting the last rung there as THE answer teaches the wrong
+    lesson, and the flag had no reader anywhere."""
+    if level < 2 or len(hints) < level - 1:
+        return ""
+    rung = hints[level - 2]
+    if meta.get("open_solution") and level - 2 == len(hints) - 1:
+        rung += " " + t["one_way_only"]
+    return rung
+
+
+def did_it_the_long_way(meta, run, lang):
+    """Should the mission's "pro version" tip be offered?
+
+    The gate is the naive pattern the meta describes. That used to be a bare
+    substring match, and ~6 of the triggers are French world literals ("cd
+    Chateau", "grep diamant", "cp etendard_1"): an English learner types `cd
+    Castle`, the trigger never matches, and the tip is silently dropped for
+    half the audience.
+
+    Two ways to qualify now. The literal still counts (and may be given per
+    language). Failing that, repeating one command three times or more is
+    itself the long way round -- which is what every one of these tips is
+    about, and it reads the same in any language.
+    """
+    if not meta:
+        return True
+    trigger = meta.get("idiom_trigger", "")
+    if isinstance(trigger, dict):
+        trigger = trigger.get(lang) or trigger.get("en") or ""
+    if not trigger:
+        return True
+    if trigger in " ; ".join(run):
+        return True
+    counts = {}
+    for cmd in run:
+        base = (cmd or "").split()[0] if cmd else ""
+        if base:
+            counts[base] = counts.get(base, 0) + 1
+    return any(n >= 3 for n in counts.values())
 
 
 def strip_gm_echo(text):
@@ -509,6 +605,8 @@ def chat_completions_url(url):
 
 
 class HttpLLMClient(LLMClient):
+    name = "http"
+
     # optional streaming: when `chunk_sink` is set (an object with
     # .feed(delta) and .close()), requests use SSE streaming and every
     # content delta is fed to the sink as it arrives; respond() still
@@ -603,12 +701,14 @@ def resolve_backend(config=None):
 
 def make_client(mode):
     if mode == "ollama":
-        return HttpLLMClient(
+        c = HttpLLMClient(
             base_url=os.environ.get("GSH_TUTOR_OLLAMA_HOST",
                                     OLLAMA_DEFAULT_BASE),
             model=os.environ.get("GSH_TUTOR_LLM_MODEL", OLLAMA_DEFAULT_MODEL),
             key=os.environ.get("GSH_TUTOR_LLM_KEY", "not-needed"),
             baked_system=True)
+        c.name = "ollama"
+        return c
     if mode == "http":
         return HttpLLMClient()
     return MockLLMClient()

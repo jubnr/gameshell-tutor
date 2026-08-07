@@ -26,6 +26,8 @@ TUTOR_HOME = os.environ.get(
     os.path.join(os.path.expanduser("~"), ".local/share/gameshell-tutor"))
 RAG_DIR = os.path.join(TUTOR_HOME, "rag")
 EMBED_MODEL = os.environ.get("GSH_TUTOR_EMBED_MODEL", "nomic-embed-text")
+EMBED_TIMEOUT = 10      # live retrieval, on the daemon's critical path
+BUILD_TIMEOUT = 120     # index build, offline
 
 COMMANDS = ["ls", "cd", "pwd", "cat", "rm", "mv", "cp", "mkdir", "find",
             "grep", "head", "tail", "less", "nano", "sort", "wc", "cut",
@@ -40,12 +42,19 @@ def _embed_url():
     return base.rstrip("/").removesuffix("/v1") + "/api/embed"
 
 
-def embed(texts):
+def embed(texts, timeout=None):
+    # Retrieval happens INSIDE the daemon's single-threaded main loop, so this
+    # timeout bounds the whole tutor. It has to stay well under the LLM's own
+    # (45s) and under gm()'s wait (60s): at 120s a wedged embedder outlasted
+    # both, and the shell held every prompt while nothing could arrive.
+    # Index building passes a longer one — nobody is waiting at a prompt then.
+    if timeout is None:
+        timeout = EMBED_TIMEOUT
     req = urllib.request.Request(
         _embed_url(),
         data=json.dumps({"model": EMBED_MODEL, "input": texts}).encode(),
         headers={"Content-Type": "application/json"})
-    with urllib.request.urlopen(req, timeout=120) as resp:
+    with urllib.request.urlopen(req, timeout=timeout) as resp:
         data = json.load(resp)
     return np.array(data["embeddings"], dtype=np.float32)
 
@@ -104,7 +113,8 @@ def build():
     print("embedding %d chunks…" % len(chunks))
     vecs = []
     for i in range(0, len(chunks), 32):
-        vecs.append(embed([c[1] for c in chunks[i:i + 32]]))
+        vecs.append(embed([c[1] for c in chunks[i:i + 32]],
+                          timeout=BUILD_TIMEOUT))
         print("  %d/%d" % (min(i + 32, len(chunks)), len(chunks)))
     mat = np.vstack(vecs)
     mat /= (np.linalg.norm(mat, axis=1, keepdims=True) + 1e-8)

@@ -42,34 +42,36 @@ then
   _TUTOR_IN_FLUSH=""
   _TUTOR_AT_PROMPT=1
 
-  # Missions whose check.sh cleans up the player's world on its failure path
-  # (see scan_unsafe_checks in install.sh). Their cleanup runs AFTER the
-  # verdict, so probing them stays accurate as long as it cannot write: we
-  # put no-op rm/mv/cp stubs first on PATH for those, and keep auto-detection
-  # everywhere. Loaded once: the list is static for the session.
+  # Missions whose check.sh must never be probed at all: it asks the learner
+  # a question (stdin-closed probe can never pass, and permissions/03 spins
+  # forever on read-at-EOF), or it waits on something. Built by
+  # scan_unsafe_checks in install.sh; the Game Master nudges the learner to
+  # submit with `gm fini` instead (engine.py owns that policy).
   # (guard the redirect: a missing file makes bash print to the learner's
   # terminal, and 2>/dev/null on `done` does not suppress that)
-  _TUTOR_SANDBOX="|"
+  _TUTOR_NOPROBE="|"
   _TUTOR_NOOPBIN="$_TUTOR_HOME/noop-bin"
-  if [ -r "$_TUTOR_HOME/sandbox-check.list" ]; then
+  if [ -r "$_TUTOR_HOME/no-probe.list" ]; then
     while IFS= read -r _m; do
-      [ -n "$_m" ] && _TUTOR_SANDBOX="$_TUTOR_SANDBOX$_m|"
-    done < "$_TUTOR_HOME/sandbox-check.list"
-  fi
-
-  # Missions whose check ASKS the learner something ("What is the secret
-  # key?"). It reads stdin, so the silent probe (stdin closed) can never pass
-  # it: the answer only exists in the learner's head. The Game Master launches
-  # the real check for them instead, so no command has to be memorised.
-  _TUTOR_INTERACTIVE="|"
-  if [ -r "$_TUTOR_HOME/interactive-check.list" ]; then
-    while IFS= read -r _m; do
-      [ -n "$_m" ] && _TUTOR_INTERACTIVE="$_TUTOR_INTERACTIVE$_m|"
-    done < "$_TUTOR_HOME/interactive-check.list"
+      [ -n "$_m" ] && _TUTOR_NOPROBE="$_TUTOR_NOPROBE$_m|"
+    done < "$_TUTOR_HOME/no-probe.list"
   fi
   unset _m
-  _TUTOR_MNB=""      # mission the command counter below belongs to
-  _TUTOR_MCMDS=0     # real commands the learner ran in that mission
+  _TUTOR_MNB=""      # mission the probe-strike counter below belongs to
+  # Runtime backstop for a check the scanner did not catch: two consecutive
+  # timeouts and we stop probing that mission for the rest of the session.
+  _TUTOR_SLOWPROBE="|"
+  _TUTOR_PROBE_STRIKES=0
+  _TUTOR_PROBE_SECS="${GSH_TUTOR_PROBE_TIMEOUT:-2}"
+  # fractional sleep is used by the game itself, but degrade rather than spin
+  if sleep 0.05 2>/dev/null; then
+    _TUTOR_TICK=0.05; _TUTOR_PROBE_TICKS=$((_TUTOR_PROBE_SECS * 20))
+  else
+    _TUTOR_TICK=1; _TUTOR_PROBE_TICKS=$_TUTOR_PROBE_SECS
+  fi
+  # made here, not inside the probe: `mkdir` is one of the no-op stubs
+  _TUTOR_PROBETMP="$_TUTOR_SESS/probe-tmp"
+  mkdir -p "$_TUTOR_PROBETMP" 2>/dev/null
 
   _tutor_esc() {
     # minimal JSON string escaping
@@ -153,36 +155,96 @@ then
     dir=$(missiondir "$nb" 2>/dev/null)
     [ -n "$dir" ] && [ -f "$dir/check.sh" ] || return 0
 
-    # count real commands within the current mission (reset when it changes)
-    if [ "$nb" != "$_TUTOR_MNB" ]; then _TUTOR_MNB=$nb; _TUTOR_MCMDS=0; fi
-    _TUTOR_MCMDS=$((_TUTOR_MCMDS + 1))
+    # slow-probe strikes are per mission, not per session
+    if [ "$nb" != "$_TUTOR_MNB" ]; then
+      _TUTOR_MNB=$nb; _TUTOR_PROBE_STRIKES=0
+    fi
 
-    # An interactive check cannot be probed, so run the real one: once the
-    # learner has done something (1st command), then every 3rd after that
-    # until they win. A wrong answer costs nothing here, the check simply
-    # fails and comes round again.
-    case "$_TUTOR_INTERACTIVE" in
-      *"|${dir#*/missions/}|"*)
-        if [ $((_TUTOR_MCMDS % 3)) = 1 ]; then
-          echo
-          _tutor_run_check
-        fi
-        return 0 ;;
+    local rel="${dir#*/missions/}"
+
+    # NEVER run the real `gsh check` speculatively. Its failure path is
+    # destructive: lib/gsh.sh sources clean.sh, logs CHECK_OOPS (the mission
+    # then reads "(failed)" in `gm index`, in a checksum-chained log that can
+    # never be corrected), autosaves, and calls __gsh_start -- which re-runs
+    # init.sh and RESETS the mission's world. For 8 of the 10 interactive
+    # missions that re-randomises the very secret the learner is holding in
+    # their head, and for stdin_stdout_stderr/05 (`[ -t 0 ]`) it could never
+    # have passed from a terminal in the first place. So these are not probed
+    # and not auto-run: the learner submits with `gm fini`, and the Game
+    # Master says so (the nudge is engine.py's job, not the shim's).
+    case "$_TUTOR_NOPROBE$_TUTOR_SLOWPROBE" in
+      *"|$rel|"*) return 0 ;;
     esac
 
-    # a subshell contains variables and $PWD, NOT filesystem writes. For the
-    # checks that tidy the world away when they fail, shadow the destructive
-    # commands on PATH so the probe keeps its verdict and loses its bite.
-    case "$_TUTOR_SANDBOX" in
-      *"|${dir#*/missions/}|"*)
-        ( PATH="$_TUTOR_NOOPBIN:$PATH"; mission_source "$dir/check.sh" ) \
-          </dev/null >/dev/null 2>&1 || return 0 ;;
-      *)
-        ( mission_source "$dir/check.sh" ) </dev/null >/dev/null 2>&1 || return 0 ;;
-    esac
+    # A subshell contains variables and $PWD, NOT filesystem writes, and
+    # several checks tidy the world away on their failure path. Every probe
+    # therefore runs with no-op rm/mv/kill/... first on PATH; the verdict is
+    # decided before the cleanup runs, so the probe keeps its answer and
+    # loses its bite. TMPDIR moves the game's mktemp out of the game tree,
+    # which is what makes blanket sandboxing free: temp files left behind by
+    # a killed probe would otherwise be repacked into every autosave.
+    local rc=0
+    _tutor_probe "$dir/check.sh"; rc=$?
+
+    if [ "$rc" = 124 ]; then
+      # The watchdog fired. One slow probe may be a fluke; two in a row means
+      # this check waits for something, and the learner must not pay the
+      # timeout at every prompt for the rest of the mission.
+      _TUTOR_PROBE_STRIKES=$((_TUTOR_PROBE_STRIKES + 1))
+      if [ "$_TUTOR_PROBE_STRIKES" -ge 2 ]; then
+        _TUTOR_SLOWPROBE="$_TUTOR_SLOWPROBE$rel|"
+      fi
+      return 0
+    fi
+    _TUTOR_PROBE_STRIKES=0
+    [ "$rc" = 0 ] || return 0
     echo
     _tutor_run_check
     return 0
+  }
+
+  # Run a mission's check.sh as a silent, sandboxed, time-bounded predicate.
+  # Returns the check's own status, or 124 if it had to be killed.
+  #
+  # `timeout(1)` is useless here: mission_source is a shell function that
+  # needs the game's gettext/my_ps/$MISSION_DIR, so the watchdog has to be
+  # bash. Backgrounding happens INSIDE an outer subshell, so $!/wait stay
+  # private and the interactive shell never prints "[1]+ Done" -- which also
+  # keeps `jobs` clean for intermediate/04_bg_xeyes, whose check reads it.
+  # `set -m` gives the probe its own process group so the kill reaps
+  # grandchildren (a check's own `sleep`, `find`, `xargs`) too.
+  _tutor_probe() {
+    (
+      set -m
+      # The sandbox lives in the INNER subshell only. It must not reach the
+      # watchdog below, which needs a working `kill`: with the no-op stub on
+      # PATH, `kill -0` would always succeed and every probe would time out.
+      (
+        # ...and job control must be OFF again in here, or a check's own
+        # background command (`sleep 30 &`) would get a process group of its
+        # own and survive the group kill below.
+        set +m
+        export TMPDIR="$_TUTOR_PROBETMP"
+        PATH="$_TUTOR_NOOPBIN:$PATH"
+        # `kill` is a bash builtin as well, so the PATH stub only covers the
+        # `xargs kill` / `find -exec kill` forms. Disable the builtin too.
+        enable -n kill 2>/dev/null
+        mission_source "$1"
+      ) </dev/null >/dev/null 2>&1 &
+      _t_p=$!
+      _t_i=0
+      # fast path: an already-finished probe never enters the loop, so the
+      # common case costs no extra fork at all
+      while kill -0 "$_t_p" 2>/dev/null; do
+        if [ "$_t_i" -ge "$_TUTOR_PROBE_TICKS" ]; then
+          kill -9 -"$_t_p" 2>/dev/null
+          exit 124
+        fi
+        sleep "$_TUTOR_TICK"
+        _t_i=$((_t_i + 1))
+      done
+      wait "$_t_p"
+    ) 2>/dev/null
   }
 
   # run the real `gsh check` wrapped in a synthetic recorded turn (markers +
@@ -215,7 +277,7 @@ then
   # a builtin marks the file delivered (empty = consumed; the daemon janitors
   # empty files away).
   _tutor_deliver() {
-    local f line delivered="" pace="${GSH_TUTOR_PACE:-0.05}"
+    local f line delivered="" fast="" pace="${GSH_TUTOR_PACE:-0.05}"
     _TUTOR_DELIVERED=""
     for f in "$_TUTOR_OUT"/*.msg; do
       [ -s "$f" ] || continue
@@ -226,8 +288,8 @@ then
       # message instead of replaying it at the next prompt
       if command -p mv -f "$f" "$f.r" 2>/dev/null; then f="$f.r"; fi
       if [ "$pace" = 0 ]; then
-        # instant mode: drop the page-break markers, print everything
-        tr -d '\006' < "$f"
+        # instant mode: drop the delivery markers, print everything
+        tr -d '\006\016' < "$f"
       else
         # the Game Master speaks line by line, with a breath at paragraphs,
         # and waits for the learner at page breaks (\x06), RPG-style
@@ -243,11 +305,22 @@ then
               printf '\r\033[K' >&2
               continue
               ;;
+            *$'\016'*)
+              # scenery, not speech (chapter art): draw it at once. Line-by-line
+              # pacing on a 7-line drawing reads as a slow terminal, not as a
+              # storyteller, and it is the first thing the learner ever sees.
+              fast=1
+              printf '%s\n' "${line//$'\016'/}"
+              continue
+              ;;
           esac
           printf '%s\n' "$line"
           if [ -z "${line//[[:space:]]/}" ]; then
-            sleep 0.22
+            # the blank line that closes an art block belongs to the art, not
+            # to the speech that follows: no breath there either
+            [ -n "$fast" ] || sleep 0.22
           else
+            fast=""
             sleep "$pace"
           fi
         done < "$f"
@@ -272,8 +345,14 @@ then
     while :; do
       _TUTOR_STREAMING=$spoke _tutor_deliver
       [ -n "$_TUTOR_DELIVERED" ] && spoke=1
-      if [ -e "$_TUTOR_SESS/pending" ]; then
+      # re-check the marker's owner every ~1s rather than every tick: a dead
+      # or wedged daemon must not be able to hold the prompt at all
+      if [ -e "$_TUTOR_SESS/pending" ] \
+         && { [ $((i % 10)) != 0 ] || _tutor_pending_ok; }; then
         :
+      elif [ -e "$_TUTOR_SESS/pending" ]; then
+        _tutor_gone_quiet
+        break
       elif [ -n "$_TUTOR_EXPECT" ] && [ "$i" -lt 20 ]; then
         :
       else
@@ -299,6 +378,37 @@ then
       && kill -0 "$(cat "$_TUTOR_SESS/daemon.pid" 2>/dev/null)" 2>/dev/null
   }
 
+  # Is the `pending` marker still worth waiting for? It carries the daemon's
+  # pid and a deadline (tutor_daemon.mark_pending). A daemon killed between
+  # writing the marker and clearing it used to leave it there forever, and
+  # every prompt then paid the full hold-back cap in silence -- the worst
+  # failure mode we had: the game just felt broken, with nothing said.
+  # No forks here: `read` is a builtin and EPOCHSECONDS is a bash variable.
+  _tutor_pending_ok() {
+    local pid deadline now
+    # test first: a redirect from a missing file prints to the learner's
+    # terminal and 2>/dev/null on the command does not suppress it
+    [ -r "$_TUTOR_SESS/pending" ] || return 1
+    read -r pid deadline < "$_TUTOR_SESS/pending" 2>/dev/null || return 1
+    [ -n "$pid" ] || return 1
+    kill -0 "$pid" 2>/dev/null || return 1
+    now=${EPOCHSECONDS:-$(date +%s)}
+    [ -n "$deadline" ] && [ "$now" -le "$deadline" ]
+  }
+
+  # Say it once, and only once, when the Game Master stops answering.
+  _tutor_gone_quiet() {
+    command -p rm -f "$_TUTOR_SESS/pending" 2>/dev/null || : > "$_TUTOR_SESS/pending"
+    [ -n "$_TUTOR_QUIET_WARNED" ] && return 0
+    _TUTOR_QUIET_WARNED=1
+    if [ "${LANG%%_*}" = fr ]; then
+      printf "\033[2m🧙 Le Maître du Jeu s'est tu (démon arrêté) — tape \`gm\` pour le rappeler.\033[0m\n" >&2
+    else
+      printf '\033[2m🧙 The Game Master has gone quiet (daemon stopped) — type `gm` to call him back.\033[0m\n' >&2
+    fi
+    return 0
+  }
+
   _tutor_spawn_daemon() {
     local root="${GSH_TUTOR_ROOT:-${REAL_HOME:-$HOME}/Documents/gameshell-tutor}"
     [ -f "$root/tutor/tutor_daemon.py" ] || return 1
@@ -318,7 +428,9 @@ then
    gm                  te parler librement (ou : gm <question>)
    gm indice           un indice, gradué — jamais la réponse d'abord
    gm mission          te faire raconter l'épreuve en cours
-   gm fini             déclencher la validation toi-même
+   gm fini             soumettre ta réponse / déclencher la validation
+   gm fini < fichier   ... quand l'épreuve attend une redirection
+   gm commandes        cette liste
    gm index            la liste des épreuves
    gm goto N           aller à l'épreuve N
    gm parchemin        le parchemin d'origine, inchangé
@@ -331,7 +443,9 @@ HELP
    gm                  talk to me freely (or: gm <question>)
    gm hint             a hint, graded, never the answer first
    gm goal             hear the current trial again
-   gm check            trigger the check yourself
+   gm check            submit your answer / trigger the check
+   gm check < file     ... when the trial expects a redirection
+   gm commands         this list
    gm index            the list of trials
    gm goto N           go to trial N
    gm raw              the original parchment, untouched
@@ -346,6 +460,7 @@ HELP
   # gm commandes | gm persona <name>
   gm() {
     if ! _tutor_daemon_ok; then
+      _TUTOR_QUIET_WARNED=""   # a second outage deserves a second warning
       _tutor_spawn_daemon
       sleep 1
       if ! _tutor_daemon_ok; then

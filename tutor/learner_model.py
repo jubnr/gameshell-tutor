@@ -54,19 +54,28 @@ class LearnerModel:
 
     # -- concepts ----------------------------------------------------------
     def concept(self, cmd):
-        return self.data["concepts"].setdefault(
+        c = self.data["concepts"].setdefault(
             cmd, {"status": "seen", "uses": 0, "errors": 0, "last_error": None})
+        c.setdefault("streak", 0)   # models written before streaks existed
+        return c
 
     def record_use(self, cmd, ok, error_class=None):
         c = self.concept(cmd)
         if ok:
             c["uses"] += 1
-            if c["uses"] >= MASTERY_USES and c["errors"] == 0:
+            c["streak"] += 1
+            # Mastery is about the RECENT record, not a spotless lifetime one.
+            # Requiring errors == 0 forever meant a single early stumble --
+            # or a `grep` that simply found nothing -- barred a command from
+            # ever being called mastered again, however well it was used
+            # afterwards. A clean run of MASTERY_USES is the evidence.
+            if c["uses"] >= MASTERY_USES and c["streak"] >= MASTERY_USES:
                 c["status"] = "mastered"
             elif c["status"] == "seen":
                 c["status"] = "used"
         else:
             c["errors"] += 1
+            c["streak"] = 0
             c["last_error"] = error_class
             if c["status"] == "mastered":
                 c["status"] = "used"  # regression signal

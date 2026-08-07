@@ -10,14 +10,15 @@
 #  - a dead endpoint falls back to the mock (game never breaks);
 #  - resolve_backend precedence: env > config > URL-implied > mock.
 
+import hashlib
 import json
 import os
 import sys
 import threading
 from http.server import BaseHTTPRequestHandler, HTTPServer
 
-sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)),
-                                "..", "tutor"))
+HERE = os.path.dirname(os.path.abspath(__file__))
+sys.path.insert(0, os.path.join(HERE, "..", "tutor"))
 import llm  # noqa: E402
 
 CAPTURED = []
@@ -286,11 +287,17 @@ for lang in ("fr", "en"):
           not any(k in b for k in ("RUNG2_LEAK", "RUNG3_LEAK", "RUNG4_LEAK")))
     check("[%s] no intent_lang, idiom or danger note either" % lang,
           not any(k in b for k in ("INTENT_LEAK", "IDIOM_LEAK", "DANGER_LEAK")))
-check("no goal text: the greet fallback may still use it",
-      "A/B/C/D" in llm.MockLLMClient().respond(
-          {"kind": "mission_start", "lang": "fr", "mission_goal": "",
-           "mission_name": "basic/01", "mission_nb": "1",
-           "mission_meta": LEAKY, "hint_level": 1}))
+# The goal text is missing whenever goals-cache is absent or stale, i.e. on
+# every fresh machine — so this fallback is not an edge case, and it used to
+# splice intent_lang straight into the greeting. For mission 1 that is the
+# entire route the learner is supposed to discover with `ls`.
+for lang in ("fr", "en"):
+    fb = llm.MockLLMClient().respond(
+        {"kind": "mission_start", "lang": lang, "mission_goal": "",
+         "mission_name": "basic/01", "mission_nb": "1",
+         "mission_meta": LEAKY, "hint_level": 1})
+    check("[%s] no goal text: the fallback greets without leaking it" % lang,
+          bool(fb) and "A/B/C/D" not in fb)
 
 print("== the learner is never told to run a check ==")
 WRAPPED = """Objectif
@@ -313,6 +320,52 @@ check("a command split across lines is still renamed", "gm reset" in b)
 check("no raw `gsh` survives", "gsh" not in b)
 check("the descriptive constraint keeps its meaning",
       "derniere commande doit" in b)
+
+print("== the mock answers every kind the engine emits ==")
+# CLAUDE.md: "The mock must always work ... every kind the engine emits needs
+# a mock branch." It is the default backend AND the fallback on any network
+# failure, so a kind with no branch is a silent hole in the game. This reads
+# the kinds out of engine.py rather than restating them, so a new one cannot
+# be added without either a branch here or a failing test.
+import re as _re
+_eng_src = open(os.path.join(HERE, "..", "tutor", "engine.py")).read()
+EMITTED = sorted(set(_re.findall(r'build_context\(\s*"([a-z_]+)"', _eng_src)))
+check("engine kinds were found at all", len(EMITTED) >= 6)
+_MINIMAL = {"mission_meta": {"hints": {"fr": ["A", "B", "C"],
+                                       "en": ["A", "B", "C"]},
+                             "intent": "x", "danger_note": "note"},
+            "mission_goal": "Objectif\n====\n\nMontez.\n",
+            "mission_name": "basic/01", "mission_nb": "1",
+            "cmd": "cd nowhere", "exit": 1, "cwd": "/home",
+            "output": "bash: cd: nowhere: No such file or directory"}
+for _kind in EMITTED:
+    for _lang in ("fr", "en"):
+        for _level in (1, 4):
+            _ctx = dict(_MINIMAL, kind=_kind, lang=_lang, hint_level=_level)
+            if _kind == "chat":
+                _ctx["message"] = "hint request"
+            _out = llm.MockLLMClient().respond(_ctx)
+            check("mock answers %-18s [%s, level %d]" % (_kind, _lang, _level),
+                  bool(_out and _out.strip()))
+
+print("== the briefing cache key notices the art switch ==")
+# mission_art() returns "" when GSH_TUTOR_ART=0 and the renderer honours it,
+# but the flag was not in the cache key: one artless session poisoned the
+# cache for every art-enabled session afterwards.
+import importlib                                             # noqa: E402
+_keys = set()
+for _art in ("0", "1"):
+    os.environ["GSH_TUTOR_ART"] = _art
+    _d = importlib.reload(importlib.import_module("tutor_daemon"))
+    _keys.add(hashlib.sha1(json.dumps(
+        [[llm.T["fr"].get(k, "") for k in
+          ("brief_intro", "brief_outro", "greet", "greet_generic")],
+         llm.GM_COMMAND_MAP, llm.DROPPED_COMMAND_ENTRIES, _d.MISSION_ART,
+         llm.GOAL_SENTENCE_REWRITES, llm.GOAL_SENTENCE_REWRITES_AUTO,
+         llm.NARRATION_FORMAT, os.environ.get("GSH_TUTOR_ART") == "0"],
+        ensure_ascii=False, sort_keys=True).encode()).hexdigest()[:8])
+os.environ.pop("GSH_TUTOR_ART", None)
+check("art on and art off get different cache keys", len(_keys) == 2)
 
 print("== resolve_backend precedence ==")
 for var in ("GSH_TUTOR_LLM_BACKEND", "GSH_TUTOR_LLM_URL"):
